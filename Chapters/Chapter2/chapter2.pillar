@@ -1,0 +1,22 @@
+!!Machine learning with neural networks
+
+In this chapter I will provide the reader with the basic understanding of the concept of neural networks and the surrounding field. We will look at the general topic of machine learning, explain the place of neural networks as machine learning algorithms, explore different types of neural network architectures and so on. When it comes to OOP, it is very important to understand the entity that we are trying to represent in our code on a deep level. We must know what exactly is, and what isn’t a neural network, what are the different types of networks, how are they different. What is the relation between a neural network and a neuron? Finally, when it comes to weights, are they properties of a neuron, or of a whole network? If it’s neuron, then which neuron should store these weights, the one that receives the signal, or the one that emits it?
+
+!!!What is machine learning?
+
+In recent years Machine Learning became one of the most promising and rapidly developing fields in Computer Science. It tackles the problems that classical programming and sometimes also humans can't handle. In this section I will give the short introduction to the field of Machine Learning.
+
+In his book ''Information Theory, Inference, and Learning Algorithms'' ${cite:MacKay-2003}$ David MacKay writes:
+
+
+Machine learning allows us to tackle tasks that are too difficult to solve with fixed programs written and designed by human beings. From a scientific and philosophical point of view, machine learning is interesting because developing our understanding of machine learning entails developing our understanding of the principles that underlie intelligence.
+
+
+
+!!!Neural networks
+
+!!!Model of a neuron
+
+!!!Structure and representation
+
+!!!Training a neural network

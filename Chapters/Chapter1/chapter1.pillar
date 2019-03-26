@@ -1,0 +1,26 @@
+!!Introduction
+
+The best things about object-oriented programming are flexibility, extendability and reusability. The field of neural networks is a very wide, complicated, and continuously growing. It requires different methods, state-of-the-art solutions, and various heuristics. Building a flexible neural networks framework and a modeling tool that would allow you to extend and modify it based on your specific problem, is a good task for OOP.
+
+In this work I will describe my implementation of neural networks in Pharo in an object-oriented manner. One important think to note is that I do not claim to offer any new approach to building neural networks. This field has been well studied long before I got introduced to it. The main goal of this project is to bring neural networks to Pharo. To show how this beautiful language can be used for the problems of machine learning and data analysis. And to make my contribution into something that may later become a full-scale machine learning toolkit.
+
+!!!Structure
+
+""First chapter."" In this chapter will explain what is Pharo, how it can be installed, and how to acquire the code of this project. I will also talk about the ideas behind implementing neural networks, as well as the other machine learning algorithms, in an object-oriented manner, and give a brief overview of the work done before in this field.
+
+""Second chapter."" Here I will give you the short introduction into machine learning and neural networks. I will talk about different kinds of learning, different network architectures, different ways of training them. Feel free to skip that chapter if you already have a good knowledge of the concepts in question. But do have a look at a section [?] where I talk about the confusing terminology and explain my reasoning behind naming the classes in this project.
+
+""Third chapter."" Here I talk about my implementation of a single-layer perceptron as a collection of neurons. Each neuron in this representation is a separate object. This approach may not be the best one performance-wise, but it can be used for modeling purposes.
+
+""Fourth chapter."" This chapter is dedicated to a multi-layer neural network. It is implemented as a collection of layers. Neurons are not the logical units anymore which allows us to perform some very expensive computations much faster using the vector-matrix operations implemented in the PolyMath package.
+
+""Fifth chapter."" In this final chapter I demonstrate how my multi-layer neural network can be used for the classic task of classifying the handwritten digits from MNIST dataset. This chapter gives you the detailed explaination of how to use the neural networks package and how to extend it to fit your specific needs. So if you want to start using the package right ahead - jump straight to the fifth chapter.
+
+
+!!!Related work
+
+!!!Installation
+
+!!!Example of usage
+
+!!!How to contribute?
