@@ -1,6 +1,10 @@
-Work in progress. We will reorganise all these....
+
+! Supervised learning 
 
 ${inputFile:path=Chapters/Chapter1/chapter1.pillar}$
 ${inputFile:path=Chapters/Chapter2/chapter2.pillar}$
 ${inputFile:path=Chapters/Chapter3/chapter3.pillar}$
 ${inputFile:path=Chapters/Chapter4/chapter4.pillar}$
+
+! NLP 
+
