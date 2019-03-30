@@ -1,10 +1,13 @@
 
-! Supervised learning 
+! Generative Models
 
-${inputFile:path=Chapters/Chapter1/chapter1.pillar}$
-${inputFile:path=Chapters/Chapter2/chapter2.pillar}$
-${inputFile:path=Chapters/Chapter3/chapter3.pillar}$
-${inputFile:path=Chapters/Chapter4/chapter4.pillar}$
+${inputFile:path=Chapters/NaiveBayes.pillar}$
 
-! NLP 
+! Neural Networks
 
+${inputFile:path=Chapters/Introduction.pillar}$
+${inputFile:path=Chapters/NeuralNetworks.pillar}$
+${inputFile:path=Chapters/Perceptron.pillar}$
+${inputFile:path=Chapters/HelloDigits.pillar}$
+
+! Natural Language Processing

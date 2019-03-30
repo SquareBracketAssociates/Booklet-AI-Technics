@@ -1,0 +1,11 @@
+!! Naive Bayes Classifier
+
+Naive Bayes Classifier (NBC) is a very simple yet powerful algorithm of machine learning. It is a generative model, which means that it is trying to learn the joint probability distribution $$P(X, Y)$$ of input $$X$$ and output $$Y$$.
+
+!!! How does it work?
+
+$$P(Y|X) = \frac{P(Y)P(Y|X)}{P(X)}$$
+$P(Y|X) = \frac{P(Y)P(Y|X)}{P(X)}$
+\[ P(Y|X) = \frac{P(Y)P(Y|X)}{P(X)} \]
+
+!!! Implementation
