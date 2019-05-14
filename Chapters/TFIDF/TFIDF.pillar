@@ -1,0 +1,21 @@
+TF-IDF is a metric that represents the importance of a word in a document compared to the words that occur in all the documents. It characterizes a kind of local context.
+By the TF-IDF comes from Term Frequency-Inverse Document Frequency.
+
+In this chapter we will see how we can easily compute TF-IDF in Pharo. We will apply TF-IDF to characterize the vocabulary used in Pharo packages.
+
+
+!! Basics
+It has many uses, most importantly in automated text analysis, and is very useful for scoring words in machine learning algorithms for Natural Language Processing (NLP).
+TF-IDF was invented for document search and information retrieval. It works by increasing proportionally to the number of times a word appears in a document, but is offset by the number of documents that contain the word. 
+
+The intuition that TF-IDF is that global frequency of words over the total amount of documents does not give much information about on specific document. Most frequent words represent a kind of noise. 
+TF-IDF intuition captures that frequent words over the total number of document are less significant than frequent words in a specific document. It helps removing the noise and focusing on revelant information per document (a local context).
+
+For example, given a set of document, words that are common in every document, such as this, what, and if, rank low even though they may appear many times, since they don’t mean much to that document in particular. If the word 'Visual' appears many times in a specific document, (and does appear many times in others), it probably means that it’s relevant
+to this particular document. 
+
+
+
+!! Computing TF-IDF
+
+!! Implementing
