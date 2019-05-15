@@ -6,16 +6,63 @@ In this chapter we will see how we can easily compute TF-IDF in Pharo. We will a
 
 !! Basics
 It has many uses, most importantly in automated text analysis, and is very useful for scoring words in machine learning algorithms for Natural Language Processing (NLP).
-TF-IDF was invented for document search and information retrieval. It works by increasing proportionally to the number of times a word appears in a document, but is offset by the number of documents that contain the word. 
+TF-IDF was invented for document search and information retrieval.
 
-The intuition that TF-IDF is that global frequency of words over the total amount of documents does not give much information about on specific document. Most frequent words represent a kind of noise. 
+The intuition upon which TF-IDF is built is that the global frequency of a word over the total amount of documents does not give much information about one specific document. Most frequent words represent a kind of noise.
 TF-IDF intuition captures that frequent words over the total number of document are less significant than frequent words in a specific document. It helps removing the noise and focusing on revelant information per document (a local context).
 
-For example, given a set of document, words that are common in every document, such as this, what, and if, rank low even though they may appear many times, since they don’t mean much to that document in particular. If the word 'Visual' appears many times in a specific document, (and does appear many times in others), it probably means that it’s relevant
-to this particular document. 
-
-
+For example, given a set of documents, words that are common in every document, such as this, a, the, and that, will rank low even though they may appear many times, since they don’t mean much to that document in particular. On the other side if a word for example 'visual' appears many times in a specific document, (and does not appear many times in others), it probably means that it’s relevant to this particular document.
 
 !! Computing TF-IDF
 
-!! Implementing
+TF-IDF is basically the product of two metrics. One metric TF which represents the frequency of a term (often this is just the occurrence of that term) in a give document. 
+And the other IDF measures the importance of a term in the complete document corpus.
+
+!!! TF 
+TF stands for term frequency. Often implementations use the occurence of a term in a document. Some other propose to divide that occurrence by the length of the document or the maximum term occurrence in that document. 
+TF (term, document) = numberOfOccurrence (term, document)
+
+!!! IDF 
+IDF stands for inverse document frequency. It represents the inverse of the frequency of a term accross the complete corpus. So it is often defined as number of documents  divided by number of documents in which that term occurs. To uniformize its effect, often a logarithm is applied to this fraction.
+
+IDF (term, corpus) = ln ( numberOfDocument (corpus) / numberOfDocument(term,corpus)
+
+TF-IDF(term, document, corpus) = TF(term, document) * IDF (term, corpus)
+
+!!! A minimal corpus
+
+[[[
+| documents |
+documents := #(
+	(I am Sam)
+	(Sam I am)
+	(I 'don''t' like green eggs and ham)).
+]]]
+
+The words of the corpus are 
+
+[[[
+words := #(I am Sam 'don''t' like green eggs and ham)
+]]]
+
+
+
+
+
+!!! First some tests
+
+[[[
+TestCase subclass: TFIDFTest
+	
+]]]
+
+
+!! Implementing TF-IDF 
+
+!!! Some tests
+
+
+!!! Implementation
+
+
+!! Testing on Pharo packages
