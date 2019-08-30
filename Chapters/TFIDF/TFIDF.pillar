@@ -1,21 +1,27 @@
-TF-IDF is a metric that represents the importance of a word in a document compared to the words that occur in all the documents. It characterizes a kind of local context.
-By the TF-IDF comes from Term Frequency-Inverse Document Frequency.
+!! TF-IDF
 
-In this chapter we will see how we can easily compute TF-IDF in Pharo. We will apply TF-IDF to characterize the vocabulary used in Pharo packages.
+TF-IDF is a metric that represents the importance of a word in a document compared to the words that occur in all the documents of the corpus under analysis. 
+It characterizes a kind of local context.
+TF-IDF comes from Term Frequency-Inverse Document Frequency.
+
+In this chapter we will see how we can easily compute TF-IDF in Pharo. 
+We will apply TF-IDF to characterize the vocabulary used in Pharo packages.
 
 
-!! Basics
-It has many uses, most importantly in automated text analysis, and is very useful for scoring words in machine learning algorithms for Natural Language Processing (NLP).
+!!! Basics
+TF-IDF has many uses, most importantly in automated text analysis, and is very useful for scoring words in machine learning algorithms for Natural Language Processing (NLP).
 TF-IDF was invented for document search and information retrieval.
 
-The intuition upon which TF-IDF is built is that the global frequency of a word over the total amount of documents does not give much information about one specific document. Most frequent words represent a kind of noise.
+The intuition upon which TF-IDF is built is that the global frequency of a word over the total amount of documents does not give much information about one specific document. 
+Most frequent words represent a kind of noise.
 TF-IDF intuition captures that frequent words over the total number of document are less significant than frequent words in a specific document. It helps removing the noise and focusing on revelant information per document (a local context).
 
 For example, given a set of documents, words that are common in every document, such as this, a, the, and that, will rank low even though they may appear many times, since they don’t mean much to that document in particular. On the other side if a word for example 'visual' appears many times in a specific document, (and does not appear many times in others), it probably means that it’s relevant to this particular document.
 
-!! Computing TF-IDF
+!!! Computing TF-IDF
 
-TF-IDF is basically the product of two metrics. One metric TF which represents the frequency of a term (often this is just the occurrence of that term) in a give document. 
+TF-IDF is basically the product of two metrics. 
+One metric TF which represents the frequency of a term (often this is just the occurrence of that term) in a give document. 
 And the other IDF measures the importance of a term in the complete document corpus.
 
 !!! TF 
