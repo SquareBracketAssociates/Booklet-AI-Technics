@@ -1,0 +1,180 @@
+!! Term Frequency - Inverse Document Frequency
+
+""TF-IDF"" is a metric that represents the importance of a word in a document compared to the words that occur in all the documents of the corpus under analysis. 
+It characterizes a kind of local context.
+TF-IDF comes from Term Frequency-Inverse Document Frequency.
+
+In this chapter we will see how we can easily compute TF-IDF in Pharo. 
+We will apply TF-IDF to characterize the vocabulary used in Pharo packages.
+
+!!! Definition
+TF-IDF has many uses, most importantly in automated text analysis, and is very useful for scoring words in machine learning algorithms for Natural Language Processing (NLP).
+TF-IDF was invented for document search and information retrieval.
+
+The intuition upon which TF-IDF is built is that the global frequency of a word over the total amount of documents does not give much information about one specific document. 
+Most frequent words represent a kind of noise.
+TF-IDF intuition captures that frequent words over the total number of document are less significant than frequent words in a specific document. It helps removing the noise and focusing on revelant information per document (a local context).
+
+For example, given a set of documents, words that are common in every document, such as this, a, the, and that, will rank low even though they may appear many times, since they don’t mean much to that document in particular. On the other side if a word for example 'visual' appears many times in a specific document, (and does not appear many times in others), it probably means that it’s relevant to this particular document.
+
+!!!! Computing TF-IDF
+
+TF-IDF is basically the product of two metrics. 
+One metric TF which represents the frequency of a term (often this is just the occurrence of that term) in a give document. 
+And the other IDF measures the importance of a term in the complete document corpus.
+
+!!!! Computing term frequency 
+
+%+>figures/tfidf-tf.png|height=7+
+{{{latex:
+\[ tf = \frac{f_{w,d}}{|d|} \]
+}}}
+
+where |d| is the total number of words in document d and fwd is the number of occurences of word w in document d:
+
+%+>figures/tfidf-fwd.png|height=7+
+{{{latex:
+\[ f_{w,d} = |\{ w_i \in d | w_i = w \}| \]
+}}}
+
+Therefore, tf(w, d) tells us how frequent is word w in document d.
+
+
+!!!! Computing the inverse document frequency
+
+In the previous section, we have defined ""term frequency"" - the measude of how often word w appears in document d, normalized by the size of the document. Similarly, we can define the ""document frequency"" - a meaure of how many documents in our dataset contain the word w normalized by the total number of documents.
+
+%+>figures/tfidf-df.png|height=7+
+{{{latex:
+\[ df = \frac{f_{w,C}}{|C|} \]
+}}}
+
+where |C| is the total number of documents in our dataset and fwC is the number of documents that contain w:
+
+%+>figures/tfidf-fwc.png|height=7+
+{{{latex:
+\[ f_{w,C} = |\{ d \in C | w \in d \}| \]
+}}}
+
+""Inverse document frequency"" is 1 divided by the document frequency. We also scale this number on the logarithmic scale:
+
+%+>figures/tfidf-idf.png|height=7+
+{{{latex:
+\[ idf(w,C) = \log\frac{1}{df(w,C)} \]
+}}}
+
+%+>figures/tfidf-tfidf.png|height=7+
+{{{latex:
+\[ tfidf{w,d,C} = tf(w,d) \cdot idf(w,C) \]
+}}}
+
+!!! API
+
+We want to have an instance of TF-IDF algorithm that can be trained on a collection of documents and then applied either to score words in a given document or to produce a vector representation of a document.
+
+[[[
+documents := #(
+	(I am Sam)
+	(Sam I am)
+	(I 'don''t' like green eggs and ham)
+).
+]]]
+
+[[[
+tfidf := TermFrequencyInverseDocumentFrequency new.
+]]]
+
+[[[
+tfidf trainOn: documents.
+]]]
+
+[[[
+tfidf scoreOf: 'Sam' in: #(I am Sam).
+tfidf scoreOf: 'I' in: #(I am Sam).
+tfidf scoreOf: 'Sam' in #(Sam Sam Sam).
+]]]
+
+[[[
+tfidf vectorFor: #(I am Bob).
+]]]
+
+!!! Writing tests
+
+[[[
+TestCase subclass: #TermFrequencyInverseDocumentFrequencyTest
+	instanceVariableNames: 'documents tfidf'
+	classVariableNames: ''
+	package: 'TF-IDF-Tests'
+]]]
+
+[[[
+setUp 
+	documents := #(
+		(I am Sam)
+		(Sam I am)
+		(I 'don''t' like green eggs and ham)).
+		
+	tfidf := PGTermFrequencyInverseDocumentFrequency new.
+	tfidf trainOn: documents.
+]]]
+
+!!! Implementation
+
+Now let's implement TF-IDF in Pharo. We start by creating a class ==TermFrequencyInverseDocumentFrequency== with two instance variables:
+
+# ==numberOfDocuments== - total number of docuements.
+# ==perWordDocumentCount== - a ==Bag== of words from all documents where each word is counted only once per document. This collection will allow us to count documents that include a given word.
+
+[[[
+Object subclass: #TermFrequencyInverseDocumentFrequency
+	instanceVariableNames: 'totalWordCounts perWordDocumentCount numberOfDocuments'
+	classVariableNames: ''
+	package: 'TF-IDF'
+]]]
+
+
+
+[[[
+trainOn: aCollectionOfDocuments
+	numberOfDocuments := aCollectionOfDocuments size.
+	perWordDocumentCount := ((aCollectionOfDocuments collect: [ :document | document asSet asArray ]) flatCollect: #yourself) asBag.
+]]]
+
+[[[
+scoreOf: aWord in: aDocument
+	| tf idf |
+	tf := self termFrequencyOf: aWord in: aDocument.
+	idf := self inverseDocumentFrequencyOf: aWord.
+	^ tf * idf
+]]]
+
+[[[
+termFrequencyOf: aWord in: aDocument
+	^ aDocument occurrencesOf: aWord
+]]]
+
+[[[
+log: aNumber
+	"Natural logarithm used o compute IDF. Can be overriden by subclasses"
+	^ aNumber ln
+]]]
+
+[[[
+inverseDocumentFrequencyOf: aWord
+	^ self log: (numberOfDocuments / (self numberOfDocumentsThatContainWord: aWord)).
+]]]
+
+[[[
+numberOfDocumentsThatContainWord: aWord
+	^ perWordDocumentCount occurrencesOf: aWord
+]]]
+
+[[[
+vocabulary
+	^ totalWordCounts asSet sorted
+]]]
+
+[[[
+vectorFor: aDocument
+	^ self vocabulary collect: [ :word | self scoreOf: word in: aDocument ].
+]]]

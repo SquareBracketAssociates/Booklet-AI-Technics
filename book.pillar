@@ -1,17 +1,4 @@
-! Random
-
-${inputFile:path=Chapters/TFIDF/TFIDF.pillar}$
-
-
-! Generative Models
-
-${inputFile:path=Chapters/NaiveBayes.pillar}$
-
-! Neural Networks
-
-${inputFile:path=Chapters/Introduction.pillar}$
-${inputFile:path=Chapters/NeuralNetworks.pillar}$
-${inputFile:path=Chapters/Perceptron.pillar}$
-${inputFile:path=Chapters/HelloDigits.pillar}$
-
 ! Natural Language Processing
+
+${inputFile:path=Chapters/NLP/NLP.pillar}$
+${inputFile:path=Chapters/NLP/TFIDF.pillar}$
