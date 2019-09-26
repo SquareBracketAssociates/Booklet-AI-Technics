@@ -1,17 +1,25 @@
 !! Term Frequency - Inverse Document Frequency
 @chap:TFIDF
 
-""TF-IDF"" is a metric that represents the importance of a word in a document compared to the words that occur in all the documents of the corpus under analysis. 
-It characterizes a kind of local context.
-TF-IDF comes from Term Frequency-Inverse Document Frequency.
+Imagine that you have a library filled with books and you want to summarize each one of them with several keywords - words that are most representative of its contents.
 
-In this chapter we will see how we can easily compute TF-IDF in Pharo. 
-We will apply TF-IDF to characterize the vocabulary used in Pharo packages.
+You can count the occurences of each word and select the top 10 most commonly used words. Turns out that for all significantly big English texts, those words will be roughly the same: ''the, and, to of, a, I, in, was, he, that''${footnote:note=The list of 1000 most common wordforms in UK English, based on 29 works of literature by 18 authors: *http://www.bckelk.ukfsn.org/words/uk1000n.html*}$. These are the most used words in English language. Of course, they can't tell you what your book is about and how is it from other pieces of writing.
 
-We willl describe the implementation in Section *@sec:TFIDF-Implementation*.
+Let us take a different approach. Instead of looking for the most frequent words in the given book, we will find words that appear often in this particular book and rarely in others.
 
-!!! Definition
-@sec:TFIDF-Definition
+Take an Art book for example. Words such as ''"painter"'', ''"masterpiece"'', ''"color"'' will appear in it more frequently than in books on Medicine. The latter will have high frequency of words ''"disease"'', ''"treatment"'', ''"patient"'', etc. As for generic words such as ''"this"'' or ''"the"'', they will be frequent in all books and therefore they will not be representative of any of them. 
+
+!!! What is it?
+@sec:TFIDF-WhatIsIt
+
+The idea that we have just described is called ""Term Frequency - Inverse Document Frequency (TF-IDF)"". It is a metric that represents the importance of a word in a document compared to the words that occur in all the documents of the corpus under analysis.
+
+TF-IDF is basically the product of two metrics. 
+One metric TF which represents the frequency of a term (often this is just the occurrence of that term) in a give document. 
+And the other IDF measures the importance of a term in the complete document corpus.
+
+!!! Applications
+@sec:TFIDF-Applications
 
 TF-IDF has many uses, most importantly in automated text analysis, and is very useful for scoring words in machine learning algorithms for Natural Language Processing (NLP).
 TF-IDF was invented for document search and information retrieval.
@@ -22,9 +30,8 @@ TF-IDF intuition captures that frequent words over the total number of document 
 
 For example, given a set of documents, words that are common in every document, such as this, a, the, and that, will rank low even though they may appear many times, since they don’t mean much to that document in particular. On the other side if a word for example 'visual' appears many times in a specific document, (and does not appear many times in others), it probably means that it’s relevant to this particular document.
 
-TF-IDF is basically the product of two metrics. 
-One metric TF which represents the frequency of a term (often this is just the occurrence of that term) in a give document. 
-And the other IDF measures the importance of a term in the complete document corpus.
+!!! Formal Definition
+@sec:TFIDF-Definition
 
 Given the collection of documents {{{$C$}}} (we call it a corpus):
 
@@ -38,39 +45,43 @@ where each document is a sequence of words:
 \[ d = \{ w_1, w_2, \dots, w_m \} \]
 }}}
 
-!!!! Term frequency
+!!!! Term Frequency
 
-{{{
-\[ tf = \frac{f_{w,d}}{|d|} \]
-}}}
-
-where {{{$|d|$}}} is the total number of words in document {{{$d$}}} and {{{$f_{w,d}$}}} is the number of occurences of word {{{$w$}}} in document {{{$d$}}}:
+Let {{{$f_{w,d}$}}} be the number of occurences of word {{{$w$}}} in document {{{$d$}}}:
 
 {{{
 \[ f_{w,d} = |\{ w_i \in d | w_i = w \}| \]
 }}}
 
-Therefore, {{{$tf(w, d)$}}} tells us how frequent is word {{{$w$}}} in document {{{$d$}}}.
-
-
-!!!! Inverse document frequency 
-
-In the previous section, we have defined ""term frequency"" - the measude of how often word {{{$w$}}} appears in document {{{$d$}}}, normalized by the size of the document. Similarly, we can define the ""document frequency"" - a meaure of how many documents in our dataset contain the word {{{$w$}}} normalized by the total number of documents.
+""Term frequency (TF)"" of word {{{$w$}}} in document {{{$d$}}} is the number of times {{{$w$}}} appers in {{{$d$}}} divided by the total number of words in document {{{$|d|$}}}:
 
 {{{
-\[ df = \frac{f_{w,C}}{|C|} \]
+\[ tf(w, d) = \frac{count_{w,d}}{|d|} \]
 }}}
 
-where {{{$|C|$}}} is the total number of documents in our dataset and {{{$f_{w,C}$}}} is the number of documents that contain {{{$w$}}}:
+Therefore, {{{$tf(w, d)$}}} tells us what percent of words in document {{{$d$}}} are equal to {{{$w$}}}. This number does not depend on the size of the docuement. 
+
+
+!!!! Document Frequency 
+
+Similarly, let {{{$f_{w,C}$}}} be the number of documents in corpus {{{$C$}}} that contain word {{{$w$}}}:
 
 {{{
 \[ f_{w,C} = |\{ d \in C | w \in d \}| \]
 }}}
 
+""Document frequency (DF)"" of word {{{$w$}}} in corpus {{{$C$}}} is the number of documents in {{{$C$}}} that contain the word {{{$w$}}} normalized by the total number of documents {{{$|C|$}}} - size of corpus {{{C}}}.
+
+{{{
+\[ df(w, C) = \frac{f_{w,C}}{|C|} \]
+}}}
+
+!!! Inverse Document Frequency
+
 ""Inverse document frequency"" is 1 divided by the document frequency. We also scale this number on the logarithmic scale:
 
 {{{
-\[ idf(w,C) = \log\frac{1}{df(w,C)} \]
+\[ idf(w, C) = \log\frac{1}{df(w,C)} \]
 }}}
 
 !!!! TF-IDF score
@@ -81,7 +92,7 @@ where {{{$|C|$}}} is the total number of documents in our dataset and {{{$f_{w,C
 
 @@note Document that is used to compute the term frequency is not necesserily from the corpus {{{$C$}}}. This means that we can train the TF-IDF model on a collection of documents and then apply it to the previously unseen documents. 
 
-!!! Desired API
+!!! Designing the API
 @sec:TFIDF-API
 
 We want to have an instance of TF-IDF algorithm that can be trained on a collection of documents and then applied either to score words in a given document or to produce a vector representation of a document.
