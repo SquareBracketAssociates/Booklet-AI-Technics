@@ -78,11 +78,13 @@ Similarly, let {{{$f_{w,C}$}}} be the number of documents in corpus {{{$C$}}} th
 
 !!!! Inverse Document Frequency
 
-""Inverse document frequency"" is 1 divided by the document frequency. We also scale this number on the logarithmic scale:
+""Inverse document frequency"" is 1 divided by the document frequency. We also scale this number on the logarithmic scale${footnote:note=It is a common practice to use natural logarithm. However, IDF can be scaled with logarithms of different bases. For example, 2 or 10.}$:
 
 {{{
 \[ idf(w, C) = \log\frac{1}{df(w,C)} \]
 }}}
+
+@@todo Why do we use the logarithmic scale?
 
 !!!! TF-IDF score
 
@@ -90,7 +92,55 @@ Similarly, let {{{$f_{w,C}$}}} be the number of documents in corpus {{{$C$}}} th
 \[ tfidf(w,d,C) = tf(w,d) \cdot idf(w,C) \]
 }}}
 
-@@note Document that is used to compute the term frequency is not necesserily from the corpus {{{$C$}}}. This means that we can train the TF-IDF model on a collection of documents and then apply it to the previously unseen documents. 
+@@note Document {{{$d$}}} that is used to compute the term frequency is not necesserily from the corpus {{{$C$}}}. This means that we can train the TF-IDF model on a collection of documents and then apply it to previously unseen documents. 
+
+!!! Simple Example
+@sec:SimpleExample
+
+Let's train TF-IDF model on the following three sentences (documents) - we will refer to ther as the ''training corpus'':
+
+# ''"I am Sam"''
+# ''"Sam I am"''
+# ''"I don't like green eggs and ham"''
+
+And apply it to get the scores of words from a new sentence:
+
+4. ''"I am green green ham"''
+
+This means than we will calculate the ""inverse document frequency (IDF)"" of each word from sentence 4 based on sentences 1-3. Then we calculate the ""term frequency (TF)"" of each word from sentence 4 based on sentence 4. So ""IDF"" comes from the coorpus of training sentences and ""TF"" comes from the sentence that we want to score. In the following table, you can see the IDF score of every word from the training corpus:
+
+| |! count |! DF |! 1/DF |! IDF = log(1/DF)
+|! I | 3 | 1 | 1 | 0
+|! am | 2 | 0.667 | 1.5 | 0.406
+|! Sam | 2 | 0.667 | 1.5 | 0.406
+|! don't | 1 | 0.333 | 3 | 1.099
+|! like | 1 | 0.333 | 3 | 1.099
+|! green | 1 | 0.333 | 3 | 1.099
+|! eggs | 1 | 0.333 | 3 | 1.099
+|! and | 1 | 0.333 | 3 | 1.099
+|! ham | 1 | 0.333 | 3 | 1.099
+
+Now let's calculate the TF score of every word from sentence 4 and multiply it by the corresponding IDF score to get the final TF-IDF value:
+
+| |! count |! TF |! TF-IDF
+|! I | 1 | 0.2 | 0
+|! am | 1 | 0.2 | 0.081
+|! green | 2 | 0.4 | 0.440
+|! ham | 1 | 0.2 | 0.220
+
+Notice that the highest score was assigned to the word ''"green"'' - it appears twice in sentence 4 and only once in the training corpus. After it comes the word ''"ham"'' which has the same frequency in the training corpus bu lower frequency in the sentence under analysis. Word ''"am"'' has low score because it apeared in the training corpus twice. And the score of word ''"I"'' is 0 because it was present in every single sentence of the training corpus.
+
+@@todo What happens if we apply it to ''"I am green green fruit"''?
+
+We can also use TF-IDF to get the vector representation of a document. We do this in two steps:
+
+# Take vocabulary of all words used in the documents from our training corpus: ''"I", "am", "Sam", "don't", "like", "green", "eggs", "and", "ham"''.
+# For every word in that vocabulary, find its TF-IDF score in the document under analysis. This will give us 9 scores (size of the training vocabulary) which form a vector representation of the document.
+
+|! I |! am |! Sam |! don't |! like |! green |! eggs |! and |! ham
+| 0 | 0.081 | 0 | 0 | 0 | 0.44 | 0 | 0 | 0.22
+
+@@note Words ''"Sam", "don't", "like", "eggs", "and"'' did not appear in the reference sentence. This means that their count (and TF) is 0. Therefore, the TF-IDF of these words is also 0. 
 
 !!! Designing the API
 @sec:TFIDF-API
@@ -120,9 +170,9 @@ tfidf trainOn: documents.
 !!!! TF-IDF score of word in a document
 
 [[[
-tfidf scoreOf: 'Sam' in: #(I am Sam).
-tfidf scoreOf: 'I' in: #(I am Sam).
-tfidf scoreOf: 'Sam' in #(Sam Sam Sam).
+tfidf scoreOf: 'ham' in: #(I am green green ham). "0.22"
+tfidf scoreOf: 'green' in: #(I am green green ham).  "0.44"
+tfidf scoreOf: 'I' in: #(I am green green ham).  "0"
 ]]]
 
 !!!! TF-IDF vector for a document
@@ -143,13 +193,37 @@ TestCase subclass: #TermFrequencyInverseDocumentFrequencyTest
 
 [[[
 setUp 
-	documents := #(
+	trainDocuments := #(
 		(I am Sam)
 		(Sam I am)
 		(I 'don''t' like green eggs and ham)).
+
+	referenceDocument := #(I am green green ham).
 		
 	tfidf := PGTermFrequencyInverseDocumentFrequency new.
-	tfidf trainOn: documents.
+	tfidf trainOn: trainDocuments.
+]]]
+
+[[[
+testScoreOfI
+	self
+		assert: (tfidf scoreOf: 'I' in: referenceDocument)
+		closeTo: 0.
+
+testScoreOfAm
+	self
+		assert: (tfidf scoreOf: 'am' in: referenceDocument)
+		closeTo: 0.081.	
+
+testScoreOfGreen
+	self
+		assert: (tfidf scoreOf: 'green' in: referenceDocument)
+		closeTo: 0.44.
+
+testScoreOfHam
+	self
+		assert: (tfidf scoreOf: 'ham' in: referenceDocument)
+		closeTo: 0.22.
 ]]]
 
 !!! Implementation
@@ -214,4 +288,5 @@ vectorFor: aDocument
 	^ self vocabulary collect: [ :word | self scoreOf: word in: aDocument ].
 ]]]
 
-!!! Examples
+!!! Practical Examples
+@sec:PracticalExamples
