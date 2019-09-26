@@ -76,7 +76,7 @@ Similarly, let {{{$f_{w,C}$}}} be the number of documents in corpus {{{$C$}}} th
 \[ df(w, C) = \frac{f_{w,C}}{|C|} \]
 }}}
 
-!!! Inverse Document Frequency
+!!!! Inverse Document Frequency
 
 ""Inverse document frequency"" is 1 divided by the document frequency. We also scale this number on the logarithmic scale:
 
