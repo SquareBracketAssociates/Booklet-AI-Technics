@@ -1,0 +1,120 @@
+!! A Priori
+
+
+A key concept in Apriori algorithm is that it is based on the following assumptions: 
+- All subsets of a frequent itemset must be frequent.
+- Similarly, for any infrequent itemset, all its supersets must be infrequent too.
+
+
+!!! What is it?
+@sec:APriori-WhatIsIt
+
+
+!!! Applications
+@sec:APriori-Applications
+
+!!! Formal Definition
+@sec:APriori-Definition
+
+
+!!! Simple Example
+
+Let us start with an example, imagine that we get the following facts representing what fruits customers are 
+buying together. Here 1 means that the fruit got bougth 
+
+| Transaction ID | Apricot | Peer | Banana | Mango | Strawberry
+𝑡1	1	1	1	0	0
+𝑡2	0	1	1	1	0
+𝑡3	0	0	0	1	1
+𝑡4	1	1	0	1	0
+𝑡5	1	1	1	0	1
+𝑡6	1	1	1	1	1
+
+
+
+!!!! Step one: a frequency table
+
+| Item | Frequency (Number of transactions) |
+| Apricot (A) | 4
+| Peer(P) | 5
+| Banana(B) | 4
+| Mango(M) | 4
+| Strawberry(S) | 2
+
+!!!! Step 2: Significance selection
+
+The elements whose support is greater than or equal to the threshold are significant.
+If the support is xx percentage we get
+
+| Item | Frequency (number of transactions) |
+| Apricot (A) | 4
+| Peer(P) | 5
+| Banana(B) | 4
+| Mango(M) | 4
+
+!!!! Step 3: All possible pairs 
+
+The algorithm builds all the possible pairs of the significant items. 
+Note that the order is not important. 
+
+To do this, take the first item and pair it with all the others such as AP, AB, AM. Similarly, consider the second item and pair it with preceding items, i.e., PB, PM. 
+We are only considering the preceding items because PA (same as AP) already exists. 
+So, all the pairs in our example are AP, AB, AM, PB, PM, and BM.
+
+!!!! Step 4: Pair occurrences
+We count all the occurrences of each pair in all the transactions. 
+We obtain the following table
+
+| Itemset | Frequency (Number of transactions)
+| AP | 4
+| AB | 3
+| AM | 2
+| PB | 4
+| PM | 3
+| BM | 2
+
+!!!! Step 5: Filter again the pairs 
+Again only those itemsets are significant which cross the support threshold, and those are AP, AB, PB, and PM.
+
+!!!! Step 6: For triples
+
+if we want to the sets of three items that are purchased together. 
+We will use the itemsets found in step 5 and create a set of 3 items.
+
+To create a set of 3 items another rule, called self-join is required. 
+It says that from the item pairs AP, AB, PB, and PM we merge two pairs with the identical first item.
+
+    AP and AB, this gives APB
+    PB and PM, this gives PBM
+
+Next, we find the frequency for these two itemsets.
+
+| Itemset | Frequency (No. of transactions)
+| APB | 4
+| PBM | 3
+
+Applying the threshold rule again, we find that APB is the only significant itemset.
+
+Therefore, the set of 3 items that was purchased most frequently is APB.
+
+!!! Algorithm
+
+The entire algorithm can be divided into two steps:
+
+Step 1: Apply minimum support to find all the frequent sets with k items in a database.
+
+Step 2: Use the self-join rule to find the frequent sets with k+1 items with the help of frequent k-itemsets. Repeat this process from k=1 to the point when we are unable to apply the self-join rule.
+
+
+!!! Designing the API
+@sec:APriori-API
+
+!!! Writing tests
+@sec:APriori-Tests
+
+!!! Implementation
+@sec:APriori-Implementation
+
+
+!!! Practical Examples
+@sec:APriori-PracticalExamples

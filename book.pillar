@@ -4,3 +4,6 @@ ${inputFile:path=Chapters/Introduction.pillar}$
 
 ${inputFile:path=Chapters/NLP/NLP.pillar}$
 ${inputFile:path=Chapters/NLP/TFIDF.pillar}$
+
+! Others
+${inputFile:path=Chapters/APriori.pillar}$
