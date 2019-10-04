@@ -48,6 +48,7 @@ where each document is a sequence of words:
 !!!! Term Frequency
 
 Let {{{$f_{w,d}$}}} be the number of occurences of word {{{$w$}}} in document {{{$d$}}}:
+SD: this is a bit strange to use f for a number of occurence we could use O for occurrences
 
 {{{
 \[ f_{w,d} = |\{ w_i \in d | w_i = w \}| \]
