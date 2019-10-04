@@ -8,6 +8,7 @@ You can count the occurences of each word and select the top 10 most commonly us
 Let us take a different approach. Instead of looking for the most frequent words in the given book, we will find words that appear often in this particular book and rarely in others.
 
 Take an Art book for example. Words such as ''"painter"'', ''"masterpiece"'', ''"color"'' will appear in it more frequently than in books on Medicine. The latter will have high frequency of words ''"disease"'', ''"treatment"'', ''"patient"'', etc. As for generic words such as ''"this"'' or ''"the"'', they will be frequent in all books and therefore they will not be representative of any of them. 
+Identifying most significant terms of a document in a corpus is what ''Term Frequency - Inverse Document Frequency'' is about. 
 
 !!! What is it?
 @sec:TFIDF-WhatIsIt
@@ -16,7 +17,7 @@ The idea that we have just described is called ""Term Frequency - Inverse Docume
 
 TF-IDF is basically the product of two metrics. 
 One metric TF which represents the frequency of a term (often this is just the occurrence of that term) in a give document. 
-And the other IDF measures the importance of a term in the complete document corpus.
+And the other metric, IDF, measures the importance of a term in the complete document corpus.
 
 !!! Applications
 @sec:TFIDF-Applications
@@ -146,15 +147,17 @@ There are other solutions that are discussed in following Sections.
 |! fruit | 1 | 0.2 | infinity
 
 
-We can also use TF-IDF to get the vector representation of a document. We do this in two steps:
+We can also use TF-IDF to get the vector representation of a document. 
+Let us image that we have a new document (a sentence): ''"I", "am", "Sam", "don't", "like", "green", "eggs", "and", "ham"''.
+We do this in two steps:
 
 # Take vocabulary of all words used in the documents from our training corpus: ''"I", "am", "Sam", "don't", "like", "green", "eggs", "and", "ham"''.
-# For every word in that vocabulary, find its TF-IDF score in the document under analysis. This will give us 9 scores (size of the training vocabulary) which form a vector representation of the document.
+# For every word in that vocabulary, find its TF-IDF score in the document under analysis. This will give us 9 scores (size of the training vocabulary) which form a vector representation of the document. 
 
 |! I |! am |! Sam |! don't |! like |! green |! eggs |! and |! ham
 | 0 | 0.081 | 0 | 0 | 0 | 0.44 | 0 | 0 | 0.22
 
-@@note Words ''"Sam", "don't", "like", "eggs", "and"'' did not appear in the reference sentence. This means that their count (and TF) is 0. Therefore, the TF-IDF of these words is also 0. 
+Notice that  words ''"Sam", "don't", "like", "eggs", "and"'' did not appear in the reference sentence. This means that their count (and TF) is 0. Therefore, the TF-IDF of these words is also 0. 
 
 
 !!!! Practical aspects
