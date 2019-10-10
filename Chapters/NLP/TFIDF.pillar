@@ -3,7 +3,7 @@
 
 Imagine that you have a library filled with books and you want to summarize each one of them with several keywords - words that are most representative of its contents.
 
-You can count the occurences of each word and select the top 10 most commonly used words. Turns out that for all significantly big English texts, those words will be roughly the same: ''the, and, to of, a, I, in, was, he, that''${footnote:note=The list of 1000 most common wordforms in UK English, based on 29 works of literature by 18 authors: *http://www.bckelk.ukfsn.org/words/uk1000n.html*}$. These are the most used words in English language. Of course, they can't tell you what your book is about and how is it from other pieces of writing.
+You can count the occurrences of each word and select the top 10 most commonly used words. Turns out that for all significantly big English texts, those words will be roughly the same: ''the, and, to of, a, I, in, was, he, that''${footnote:note=The list of 1000 most common wordforms in UK English, based on 29 works of literature by 18 authors: http://www.bckelk.ukfsn.org/words/uk1000n.html}$. These are the most used words in English language. Of course, they can't tell you what your book is about and how is it from other pieces of writing.
 
 Let us take a different approach. Instead of looking for the most frequent words in the given book, we will find words that appear often in this particular book and rarely in others.
 
@@ -26,7 +26,7 @@ TF-IDF was invented for document search and information retrieval.
 
 The intuition upon which TF-IDF is built is that the global frequency of a word over the total amount of documents does not give much information about one specific document. 
 Most frequent words represent a kind of noise.
-TF-IDF intuition captures that frequent words over the total number of document are less significant than frequent words in a specific document. It helps removing the noise and focusing on revelant information per document (a local context).
+TF-IDF intuition captures that frequent words over the total number of document are less significant than frequent words in a specific document. It helps removing the noise and focusing on relevant information per document (a local context).
 
 For example, given a set of documents, words that are common in every document, such as this, a, the, and that, will rank low even though they may appear many times, since they don’t mean much to that document in particular. On the other side if a word for example 'visual' appears many times in a specific document, (and does not appear many times in others), it probably means that it’s relevant to this particular document.
 
