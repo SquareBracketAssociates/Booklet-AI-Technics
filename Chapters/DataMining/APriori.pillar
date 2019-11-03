@@ -1,0 +1,105 @@
+!! A-Priori
+
+In order to improve its sales, a small supermarket has collected the receipts from each customer during one month. They want you to analyse those receipts and find products that are often purchased together and propose a set of rules to recommend products to a customer.
+
+For example, you can produce a rule =={wine, ham} => {cheese, bread}==  which means that customers who buy wine and ham, are also likely to buy cheese and bread. So we can recommend these products to them.
+
+
+!!! What is it?
+@sec:APriori-WhatIsIt
+
+A-Priori was originally designed by Agrawal et al. ${cite:Agra94a}$ to discover association rules between items in a large database if sales transactions.
+
+
+!!! Applications
+@sec:APriori-Applications
+
+The applications of A-Priori go far beyond market basket analysis. It is applied ...
+
+
+!!! Formal Definition
+@sec:APriori-Definition
+
+{{{
+\[ support(A) = \frac{count(A)}{|D|} \]
+}}}
+
+{{{
+\[ confidence(A => B) = \frac{support(A \union B)}{support(A)} \]
+}}}
+
+""Frequent itemsets"" - itemsets that pass the minimal support threshold.
+
+We start by finding frequent itemsets of size 1 - these are the items whose support is greater or equal to the selected support threshold.
+
+Then we perform two steps iteratively:
+
+!!!! Join step
+
+We select the candidates by joining {{{$L_{k-1}$}}} with itself:
+
+{{{
+\[ L_{k-1} \delta L_{k-1} = \{  \} \]
+}}}
+
+!!!! Select step 
+
+!!! Simple Example
+@sec:APriori-SimpleExample
+
+|! Receipt № |! Items
+| #1 | eggs, milk, butter
+| #2 | milk, cereal
+| #3 | eggs, bacon
+| #4 | bread, butter
+| #5 | bread, bacon, eggs
+| #6 | bread, avocado, butter, bananas
+
+
+!!! Designing the API
+@sec:APriori-API
+
+[[[
+groceries := #( 
+  (eggs milk butter)
+  (milk cereal)
+  (eggs bacon)
+  (bread butter)
+  (bread bacon eggs)
+  (bread avocado butter bananas)).
+]]]
+
+[[[
+apriori := APriori
+  transactions: transactions
+  supportThreshold: 1/3
+  confidenceThreshold: 1/3.
+]]]
+
+[[[
+itemsets := apriori frequentItemsets.
+rules := apriori associationRules.
+]]]
+
+[[[
+itemsets first count.
+itemsets first support.
+]]]
+
+[[[
+rules first count.
+rules first support.
+rules first confidence.
+rules first lift.
+]]]
+
+!!! Writing tests
+@sec:APriori-Tests
+
+
+!!! Implementation
+@sec:APriori-Implementation
+
+
+!!! Practical Examples
+@sec:APriori-PracticalExamples

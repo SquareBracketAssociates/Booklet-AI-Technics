@@ -97,7 +97,7 @@ Similarly, let {{{$f_{w,C}$}}} be the number of documents in corpus {{{$C$}}} th
 Remark. Document {{{$d$}}} that is used to compute the term frequency is not necessarily from the corpus {{{$C$}}}. This means that we can train the TF-IDF model on a collection of documents and then apply it to previously unseen documents.
 
 !!! Simple Example
-@sec:SimpleExample
+@sec:TFIDF-SimpleExample
 
 Let's train a TF-IDF model on the following three sentences (documents) - we will refer to them as the ''training corpus'':
 
