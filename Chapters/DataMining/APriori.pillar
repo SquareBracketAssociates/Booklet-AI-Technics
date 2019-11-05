@@ -10,7 +10,6 @@ For example, you can produce a rule =={wine, ham} => {cheese, bread}==  which me
 
 A-Priori was originally designed by Agrawal et al. ${cite:Agra94a}$ to discover association rules between items in a large database if sales transactions.
 
-
 !!! Applications
 @sec:APriori-Applications
 
@@ -25,7 +24,7 @@ The applications of A-Priori go far beyond market basket analysis. It is applied
 }}}
 
 {{{
-\[ confidence(A => B) = \frac{support(A \union B)}{support(A)} \]
+\[ confidence(A => B) = \frac{support(A \cup B)}{support(A)} \]
 }}}
 
 ""Frequent itemsets"" - itemsets that pass the minimal support threshold.
@@ -103,3 +102,10 @@ rules first lift.
 
 !!! Practical Examples
 @sec:APriori-PracticalExamples
+
+!!! Recommended Reading
+@sec:APriori-RecommendedReading
+
+# ""Fast Algorithm for Mining Association Rules"" by Rakesh Agrawal and Ramakrishnan Srikant ${cite:Agra94a}$
+# Chapter 6 of ""Data Mining: Concepts and Techniques"" by Jiawei Han, Micheline Kamber, and Jian Pei ${cite:Han11a}$
+# Chapter 6 of ""Mining of Massive Datasets"" by Jure Leskovec, Anand Rajaraman, and Jeffrey D. Ullman ${cite:Lesk14a}$
