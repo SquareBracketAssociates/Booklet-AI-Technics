@@ -19,26 +19,80 @@ The applications of A-Priori go far beyond market basket analysis. It is applied
 !!! Formal Definition
 @sec:APriori-Definition
 
-{{{
-\[ support(A) = \frac{count(A)}{|D|} \]
-}}}
+!!!! Problem statement
+
+We are given a set of items called ''item base''
 
 {{{
-\[ confidence(A => B) = \frac{support(A \cup B)}{support(A)} \]
+\[ B = \{ i_1, \dots, i_n \} \]
 }}}
 
-""Frequent itemsets"" - itemsets that pass the minimal support threshold.
+And a set of ''transactions'' where each transaction is a set of items from the item base {{{$B$}}}
 
-We start by finding frequent itemsets of size 1 - these are the items whose support is greater or equal to the selected support threshold.
+{{{
+\[ T = \{ t_1, \dots, t_m \} \]
+\[ t_k \subseteq B \quad \forall t_k \in T \]
+}}}
 
-Then we perform two steps iteratively:
+You can think of items as products that are sold at the supermarket, and each transaction as a list of products purchased by one customer (list of products on the receipt).
+
+We use the word ''itemset'' to denote any set of items selected from the item base:
+
+{{{
+\[ I \subseteq B \]
+}}}
+
+In fact, every transaction is an itemset (an itemset that was purchased) and the item base itself is also an itemset.
+
+The ''cover'' of an itemset {{{$I$}}} in a set of transactions {{{$T$}}} is a subset of transactions that contain all items from this itemset
+
+{{{
+\[ K_T(I) = \{ t_k \in T | I \subseteq t_k \} \]
+}}}
+
+The ''count'' of an item set {{{$I$}}} in a set of trasactions {{{$T$}}} is the number of transactions in which this itemset appears
+
+{{{
+\[ c_T(I) = | K_T(I) | \]
+}}}
+
+The ''support'' of an itemset {{{$I$}}} is the relative frequency of this itemset in a set of transactions {{{$T$}}}
+
+{{{
+\[ s_T(I) = \frac{c_T(I)}{m} \]
+}}}
+
+where {{{$m = |T|$}}} is the total number of transactions. Here are the more intuitive interpretations of the support of an itemset:
+
+- the percentage of transactions that contain this set of items
+- the probability that a randomly selected transaction contains this set of items
+
+Given some ''minimum support'' {{{$ s_{min} \in N $}}}, an itemset {{{$I$}}} is called ''frequent'' if its support {{{$s_T(I)$}}} is greater or equal to the minimum support. We can define a set of all itemsets that are frequent in a set of transactions {{{$T$}}}:
+
+{{{
+\[ F_T(s_{min}) = \{ I \subseteq B | s_T(I) \geq s_{min} \} \]
+}}}
+
+The goal of frequent itemset mining is to find the set of all frequent itemsets {{{$F_T(s_{min})$}}} given a set of transactions {{{$T$}}} and a minimum support {{{$s_{min}$}}}.
+
+!!!! Why this is a complicated problem?
+
+The problem described above seems very simple at the first sight. And it is. We can find all frequent itemsets by looping through a set of all possible sets of items taken from {{{$B$}}} and selecting those that are frequent, i.e. itemsets whose support is greater or equal to the minimum support {{{$s_{min}$}}}.
+
+The problem is the algorithmic complexity of this search. The set of itemsets {{{$\Omega$}}} contains all possible combinations of items from {{{$B$}}}. And the size of {{{$\Omega$}}} increases exponentially as you increase the size of {{{$B$}}}.
+
+{{{
+\[ |\Omega| = \sum_{k=1}^{n} C_n^k \]
+}}}
+
+where {{{$k=|B|$}}} is the size of the item base {{{$B$}}}.
 
 !!!! Join step
 
 We select the candidates by joining {{{$L_{k-1}$}}} with itself:
 
 {{{
-\[ L_{k-1} \delta L_{k-1} = \{  \} \]
+\[ C_k = L_{k-1} \bowtie L_{k-1} \]
 }}}
 
 !!!! Select step 
@@ -46,13 +100,13 @@ We select the candidates by joining {{{$L_{k-1}$}}} with itself:
 !!! Simple Example
 @sec:APriori-SimpleExample
 
-|! Receipt № |! Items
-| #1 | eggs, milk, butter
-| #2 | milk, cereal
-| #3 | eggs, bacon
-| #4 | bread, butter
-| #5 | bread, bacon, eggs
-| #6 | bread, avocado, butter, bananas
+|! TID |! Transaction
+| 1 | {eggs, milk, butter}
+| 2 | {milk, cereal}
+| 3 | {eggs, bacon}
+| 4 | {bread, butter}
+| 5 | {bread, bacon, eggs}
+| 6 | {bread, avocado, butter, bananas}
 
 
 !!! Designing the API
@@ -107,5 +161,6 @@ rules first lift.
 @sec:APriori-RecommendedReading
 
 # ""Fast Algorithm for Mining Association Rules"" by Rakesh Agrawal and Ramakrishnan Srikant ${cite:Agra94a}$
+# ""Frequent item set mining"" by Christian Borgelt ${cite:Borg12a}$
 # Chapter 6 of ""Data Mining: Concepts and Techniques"" by Jiawei Han, Micheline Kamber, and Jian Pei ${cite:Han11a}$
 # Chapter 6 of ""Mining of Massive Datasets"" by Jure Leskovec, Anand Rajaraman, and Jeffrey D. Ullman ${cite:Lesk14a}$
