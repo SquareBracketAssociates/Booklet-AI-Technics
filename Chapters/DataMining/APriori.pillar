@@ -19,7 +19,7 @@ The applications of A-Priori go far beyond market basket analysis.
 !!! Formal Definition
 @sec:APriori-Definition
 
-!!!! Problem statement
+!!!! The Problem of Mining Frequent Itemsets
 
 We are given a set of items called ''item base''
 
@@ -67,13 +67,17 @@ where {{{$m = |T|$}}} is the total number of transactions. Here are the more int
 - the percentage of transactions that contain this set of items
 - the probability that a randomly selected transaction contains this set of items
 
-Given some ''minimum support'' {{{$ s_{min} \in N $}}}, an itemset {{{$I$}}} is called ''frequent'' if its support {{{$s_T(I)$}}} is greater or equal to the minimum support. We can define a set of all itemsets that are frequent in a set of transactions {{{$T$}}}:
+Given some ''minimum support'' {{{$ s_{min} \in \mathbb{N} $}}}, an itemset {{{$I$}}} is called ''frequent'' if its support {{{$s_T(I)$}}} is greater or equal to the minimum support. We can define a set of all itemsets that are frequent in a set of transactions {{{$T$}}}:
 
 {{{
 \[ F_T(s_{min}) = \{ I \subseteq B | s_T(I) \geq s_{min} \} \]
 }}}
 
 The goal of frequent itemset mining is to find the set of all frequent itemsets {{{$F_T(s_{min})$}}} given a set of transactions {{{$T$}}} and a minimum support {{{$s_{min}$}}}.
+
+!!!! Extension of the problem: Association Rules Mining
+
+
 
 !!!! Why this is a complicated problem?
 
@@ -87,7 +91,94 @@ The problem is the algorithmic complexity of this search. The set of itemsets {{
 
 where {{{$k=|B|$}}} is the size of the item base {{{$B$}}}.
 
-!!!! Join step
+!!!! The A-Priori Property
+
+The idea behind A-Priori algorithm is based on a simple intuitive property of itemsets: ''if itemset I appears in transactions k times, then there can be no itemset J that contains all elements from I and appers more than k times''.
+
+In other words,
+
+{{{
+\[ \forall I \subseteq J \subseteq B\ \colon\quad c_T(I) \geq c_T(J) \]
+}}}
+
+This fact will be central to everything what comes next, so we will give a small example to convince you in its validity.
+
+{{{
+\begin{example}{ax:TextExample}
+Hello
+\end{example}
+}}}
+
+{{{
+\begin{example}{ex:AprioriProperty}
+
+You are given two itemsets:
+
+\begin{align}
+I &= \{ \text{bread}, \text{butter} \} \\
+J &= \{ \text{bread}, \text{butter}, \text{salt} \}
+\end{align}
+
+$J$ is a superset of $I$ because it contains all items of $I$ (bread and butter) and some other items (salt).
+
+Suppose that in a database of transactions $T$ itemset $I$ appears 3 times, meaning that there were 3 customers who bought bread and butter.
+
+\[ c_T(I) = 3 \]
+
+Without knowing anything else about the transaction dataset, we can be certain that itemset $J$ could not appear in it more than 3 times. Why? Well, imagine that it's not the case, and the count of $J$ is greater, let's say that it's equal to 5:
+
+\[ c_T(J) = 5 \]
+
+This would mean that there were 5 customers, who bought bread, butter, and salt. But then, each one of them bought bread and butter, which means that $c_T(I)$ is at least 5 (it can be greater because there may be customers who bought bread and butter but no salt).
+
+\end{example}
+}}}
+
+Therefore, if an itemset is not frequent, then no superset of this itemset can be frequent:
+
+{{{
+\[ \forall I \subseteq J \subseteq B\ \colon\quad s_T(I) < s_{min} \Rightarrow s_T(J) < s_{min} \]
+}}}
+
+!!!! A-Priori Algorithm
+
+{{{
+\begin{algorithm}[H]
+ \KwData{Database of transactions $T$ and a support threshold $s_{min}$}
+ \KwResult{A set $F_T(s_{min})$ of all frequent itemsets in $T$}
+ $L_1 \leftarrow$ \{frequent 1-itemsets\}\\
+ \For{($k = 2;\ L_{k-1} \neq \varnothing;\ k++$)}{
+ 	$C_k \leftarrow$ generate\_candidates($L_{k-1}$)\\
+	$L_k \leftarrow \{ I \in C_k | s_T(I) \geq s_{min} \}$
+ }
+ $F_T(s_{min}) \leftarrow \bigcup_k L_k$
+ \caption{A-Priori algorithm}
+\end{algorithm}
+
+\begin{algorithm}[H]
+ \KwData{A set of frequent ($k-1$)-itemsets $L_{k-1}$}
+ \KwResult{A set of candidate $k$-itemsets $C_k$}
+ $C_k \leftarrow$ \{\}\\
+ \ForAll(\tcp*[f]{join step}){$I \in L_{k-1}$}{
+ 	\ForAll{$J \in L_{k-1}$}{
+		\If{can\_be\_joined($I$, $J$)}{
+ 			$C_k$.add(join($I$, $J$))
+		}
+	}
+ }
+ \ForAll(\tcp*[f]{prune step}){$I \in C_k$}{
+ 	\ForAll{($k-1$)-subsets $I_{k-1} \subset I$} {
+		\If{$I_{k-1} \notin L_{k-1}$}{
+			$C_k$.remove($I$)\\
+			break
+		}
+	}
+ }
+ \caption{Candidate generation for the A-Priori algorithm}
+\end{algorithm}
+}}}
+
+!!!!! Join step
 
 We select the candidates by joining {{{$L_{k-1}$}}} with itself:
 
@@ -95,7 +186,13 @@ We select the candidates by joining {{{$L_{k-1}$}}} with itself:
 \[ C_k = L_{k-1} \bowtie L_{k-1} \]
 }}}
 
-!!!! Select step 
+!!!!! Prune step 
+
+{{{
+\begin{tcolorbox}
+\paragraph{}
+\end{tcolorbox}
+}}}
 
 !!! Simple Example
 @sec:APriori-SimpleExample
