@@ -67,7 +67,7 @@ where {{{$m = |T|$}}} is the total number of transactions. Here are the more int
 - the percentage of transactions that contain this set of items
 - the probability that a randomly selected transaction contains this set of items
 
-Given some ''minimum support'' {{{$ s_{min} \in \mathbb{N} $}}}, an itemset {{{$I$}}} is called ''frequent'' if its support {{{$s_T(I)$}}} is greater or equal to the minimum support. We can define a set of all itemsets that are frequent in a set of transactions {{{$T$}}}:
+Given some ''minimum support'' {{{$ s_{min} \in \mathbb{N} $}}}, an itemset {{{$I$}}} is called ''frequent'' if its support {{{$s_T(I)$}}} is greater than or equal to the minimum support. We can define a set of all itemsets that are frequent in a set of transactions {{{$T$}}}:
 
 {{{
 \[ F_T(s_{min}) = \{ I \subseteq B | s_T(I) \geq s_{min} \} \]
@@ -83,17 +83,30 @@ The goal of frequent itemset mining is to find the set of all frequent itemsets 
 
 The problem described above seems very simple at the first sight. And it is. We can find all frequent itemsets by looping through a set of all possible sets of items taken from {{{$B$}}} and selecting those that are frequent, i.e. itemsets whose support is greater or equal to the minimum support {{{$s_{min}$}}}.
 
-The problem is the algorithmic complexity of this search. The set of itemsets {{{$\Omega$}}} contains all possible combinations of items from {{{$B$}}}. And the size of {{{$\Omega$}}} increases exponentially as you increase the size of {{{$B$}}}.
+The problem is the algorithmic complexity of this search. The set of itemsets {{{$\mathbb{P}(B)$}}} contains all possible combinations of items from {{{$B$}}}. And its size increases exponentially as you increase the size of {{{$B$}}}.
 
 {{{
-\[ |\Omega| = \sum_{k=1}^{n} C_n^k \]
+\[ |\mathbb{P}(B)| = 2^{|B|} \]
 }}}
-
-where {{{$k=|B|$}}} is the size of the item base {{{$B$}}}.
 
 !!!! The A-Priori Property
 
 The idea behind A-Priori algorithm is based on a simple intuitive property of itemsets: ''if itemset I appears in transactions k times, then there can be no itemset J that contains all elements from I and appers more than k times''.
+
+{{{
+\begin{equation}
+y = e^x
+\end{equation}
+}}}
+
+{{{
+\begin{equation}
+\label{eq}
+y = e^x
+\end{equation}
+}}}
+
+As you can see in Equation *@eq* ...
 
 In other words,
 
@@ -104,20 +117,13 @@ In other words,
 This fact will be central to everything what comes next, so we will give a small example to convince you in its validity.
 
 {{{
-\begin{example}{ax:TextExample}
-Hello
-\end{example}
-}}}
+\begin{example}
+You are given stwo itemsets
 
-{{{
-\begin{example}{ex:AprioriProperty}
-
-You are given two itemsets:
-
-\begin{align}
+\begin{align*}
 I &= \{ \text{bread}, \text{butter} \} \\
 J &= \{ \text{bread}, \text{butter}, \text{salt} \}
-\end{align}
+\end{align*}
 
 $J$ is a superset of $I$ because it contains all items of $I$ (bread and butter) and some other items (salt).
 
@@ -125,12 +131,11 @@ Suppose that in a database of transactions $T$ itemset $I$ appears 3 times, mean
 
 \[ c_T(I) = 3 \]
 
-Without knowing anything else about the transaction dataset, we can be certain that itemset $J$ could not appear in it more than 3 times. Why? Well, imagine that it's not the case, and the count of $J$ is greater, let's say that it's equal to 5:
+Without knowing anything else about the transaction dataset, we can be certain that itemset $J$ could not appear in it more than 3 times. Why? Well, imagine that it's not the case, and the count of $J$ is greater, let's say that it's equal to 5
 
 \[ c_T(J) = 5 \]
 
 This would mean that there were 5 customers, who bought bread, butter, and salt. But then, each one of them bought bread and butter, which means that $c_T(I)$ is at least 5 (it can be greater because there may be customers who bought bread and butter but no salt).
-
 \end{example}
 }}}
 

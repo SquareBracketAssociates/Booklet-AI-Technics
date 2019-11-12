@@ -16,7 +16,7 @@
 
 % for example boxes
 \usepackage{tcolorbox}
-% \usepackage[framemethod=TikZ]{mdframed}
+\usepackage[framemethod=TikZ]{mdframed}
 
 \usepackage{url} % define and apply style to URLs
 \def\url@sfstyle{\def\UrlFont{\sf}}
@@ -76,25 +76,43 @@
 }{\end{leftbar}}
 
 % example boxes
-\newcounter{examplecounter}[section]\setcounter{examplecounter}{0}
-\renewcommand{\theexamplecounter}{\arabic{chapter}.\arabic{examplecounter}}
+\newcounter{example}[chapter]\setcounter{example}{0}
+\renewcommand{\theexample}{\arabic{chapter}.\arabic{example}}
 
-\newenvironment{example}[2][]{%
-\refstepcounter{examplecounter}%
+\newenvironment{example}{
+  \refstepcounter{example}
+  \mdfsetup{%
+  frametitle={%
+  \tikz[baseline=(current bounding box.east),outer sep=0pt]
+  \node[anchor=east,rectangle,fill=green!20]
+  {\strut Example~\theexample};}}
+  \mdfsetup{innertopmargin=10pt,innerbottommargin=10pt,linecolor=green!20,%
+  linewidth=2pt,topline=true,%
+  frametitleaboveskip=\dimexpr-\ht\strutbox\relax
+  }
+  \begin{mdframed}
+}{
+  \end{mdframed}
+}
+
+\newcounter{lem}[section]\setcounter{lem}{0}
+\renewcommand{\thelem}{\arabic{section}.\arabic{lem}}
+\newenvironment{lem}[2][]{%
+\refstepcounter{lem}%
 \ifstrempty{#1}%
 {\mdfsetup{%
 frametitle={%
 \tikz[baseline=(current bounding box.east),outer sep=0pt]
 \node[anchor=east,rectangle,fill=green!20]
-{\strut Example~\theexamplecounter};}}
+{\strut Lemma~\thelem};}}
 }%
 {\mdfsetup{%
 frametitle={%
 \tikz[baseline=(current bounding box.east),outer sep=0pt]
 \node[anchor=east,rectangle,fill=green!20]
-{\strut Example~\theexamplecounter:~#1};}}%
+{\strut Lemma~\thetheo:~#1};}}%
 }%
-\mdfsetup{innertopmargin=10pt,innerbottommargin=10pt,linecolor=green!20,%
+\mdfsetup{innertopmargin=10pt,linecolor=green!20,%
 linewidth=2pt,topline=true,%
 frametitleaboveskip=\dimexpr-\ht\strutbox\relax
 }
