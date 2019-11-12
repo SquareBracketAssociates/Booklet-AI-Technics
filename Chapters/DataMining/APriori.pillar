@@ -93,21 +93,6 @@ The problem is the algorithmic complexity of this search. The set of itemsets {{
 
 The idea behind A-Priori algorithm is based on a simple intuitive property of itemsets: ''if itemset I appears in transactions k times, then there can be no itemset J that contains all elements from I and appers more than k times''.
 
-{{{
-\begin{equation}
-y = e^x
-\end{equation}
-}}}
-
-{{{
-\begin{equation}
-\label{eq}
-y = e^x
-\end{equation}
-}}}
-
-As you can see in Equation *@eq* ...
-
 In other words,
 
 {{{
@@ -151,52 +136,136 @@ Therefore, if an itemset is not frequent, then no superset of this itemset can b
 \begin{algorithm}[H]
  \KwData{Database of transactions $T$ and a support threshold $s_{min}$}
  \KwResult{A set $F_T(s_{min})$ of all frequent itemsets in $T$}
- $L_1 \leftarrow$ \{frequent 1-itemsets\}\\
- \For{($k = 2;\ L_{k-1} \neq \varnothing;\ k++$)}{
- 	$C_k \leftarrow$ generate\_candidates($L_{k-1}$)\\
-	$L_k \leftarrow \{ I \in C_k | s_T(I) \geq s_{min} \}$
+ ~\\
+ \Fn{apriori(T, $s_{min}$)}{
+ 	$L_1 \gets$ \{frequent 1-itemsets\}\\
+ 	\For{($k = 2;\ L_{k-1} \neq \varnothing;\ k++$)}{
+ 		$C_k \gets$ generate\_candidates($L_{k-1}$)\\
+		$L_k \gets \{ I \in C_k | s_T(I) \geq s_{min} \}$
+ 	}
+ 	$F_T(s_{min}) \gets \bigcup_k L_k$ \\
+	\KwRet $F_T(s_{min})$
  }
- $F_T(s_{min}) \leftarrow \bigcup_k L_k$
  \caption{A-Priori algorithm}
+ \label{funApriori}
 \end{algorithm}
+}}}
 
+!!!!! Candidate Generation for the A-Priori Algorithm
+
+{{{
 \begin{algorithm}[H]
  \KwData{A set of frequent ($k-1$)-itemsets $L_{k-1}$}
  \KwResult{A set of candidate $k$-itemsets $C_k$}
- $C_k \leftarrow$ \{\}\\
- \ForAll(\tcp*[f]{join step}){$I \in L_{k-1}$}{
- 	\ForAll{$J \in L_{k-1}$}{
-		\If{can\_be\_joined($I$, $J$)}{
- 			$C_k$.add(join($I$, $J$))
+ ~\\
+ \Fn{generate\_candidates($L_{k-1}$)}{
+ 	$C_k \gets$ \{\}\\
+ 	\ForAll(\tcp*[f]{join step}){$I \in L_{k-1}$}{
+ 		\ForAll{$J \in L_{k-1}$}{
+			\If{can\_be\_joined($I$, $J$)}{
+ 				$C_k$.add(join($I$, $J$))
+			}
 		}
-	}
- }
- \ForAll(\tcp*[f]{prune step}){$I \in C_k$}{
- 	\ForAll{($k-1$)-subsets $I_{k-1} \subset I$} {
-		\If{$I_{k-1} \notin L_{k-1}$}{
-			$C_k$.remove($I$)\\
-			break
+ 	}
+ 	\ForAll(\tcp*[f]{prune step}){$I \in C_k$}{
+ 		\ForAll{($k-1$)-subsets $I_{k-1} \subset I$} {
+			\If{$I_{k-1} \notin L_{k-1}$}{
+				$C_k$.remove($I$)\\
+				break
+			}
 		}
-	}
+ 	}
+	\KwRet $C_k$
  }
  \caption{Candidate generation for the A-Priori algorithm}
+ \label{funCandidateGeneration}
 \end{algorithm}
 }}}
 
-!!!!! Join step
-
-We select the candidates by joining {{{$L_{k-1}$}}} with itself:
-
 {{{
-\[ C_k = L_{k-1} \bowtie L_{k-1} \]
+\begin{algorithm}[H]
+ \KwData{Two frequent $(k-1)$-itemsets $I, J \in L_{k-1}$ where $I = \{ i_1, i_2, \dots, i_{k-1} \}$ and $J = \{ j_1, j_2, \dots, j_{k-1} \}$}
+ \KwResult{A boolean value telling us if $I$ and $J$ can be joined}
+ ~\\
+ \Fn{can\_be\_joined(I, J)}{
+ 	\For{$p \gets 1$ \KwTo $k-2$}{
+ 		\If{$i_p$ != $j_p$}{
+			\KwRet false
+		}
+	 }
+	 \KwRet $i_{k-1} < j_{k-1}$
+ }
+ \caption{Testing if two itemsets can be joined}
+ \label{funJoinCondition}
+\end{algorithm}
 }}}
 
-!!!!! Prune step 
+{{{
+\begin{algorithm}[H]
+ \KwData{Two frequent $(k-1)$-itemsets $I, J \in L_{k-1}$ where $I = \{ i_1, i_2, \dots, i_{k-1} \}$ and $J = \{ j_1, j_2, \dots, j_{k-1} \}$}
+ \KwResult{A new itemset $Q$ of size $k$ constructed by joining $I$ and $J$}
+ ~\\
+ \Fn{join(I, J)}{
+ 	$Q \gets \{\}$ \\
+ 	\For{$p \gets 1$ \KwTo $k-1$}{
+ 		Q.add($j_p$)
+ 	}
+ 	Q.add($j_{k-1}$) \\
+ 	\KwRet Q
+ }
+ \caption{Joining two itemsets to generate candidates for the A-Priori algorithm}
+ \label{funJoin}
+\end{algorithm}
+}}}
+
+!!!! Proving the correctness of candidate generation
+
+It may not be obvious that by joining the set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets with itself, using the join operation {{{$L_{k-1} \bowtie L_{k-1}$}}} defined above, we cover all possible itemsets of size {{{$k$}}}. In other words, we need to show that {{{$L_k \subseteq C_k$}}}.
+
+Let's take an arbitrary frequent {{{$k$}}}-itemset {{{$I_k \in L_k$}}} and show that it belongs to {{{$C_k$}}}:
 
 {{{
-\begin{tcolorbox}
-\paragraph{}
-\end{tcolorbox}
+\[ I_k = \{ i_1, i_2, \dots, i_k \} \]
+}}}
+
+We can extract the following two subsets of size {{{$k-1$}}} from it:
+
+{{{
+\begin{align*}
+I_{k-1}^{(1)} &= \{ i_1, i_2, \dots, i_{k-2}, i_{k-1} \} \\
+I_{k-1}^{(2)} &= \{ i_1, i_2, \dots, i_{k-2}, i_k \}
+\end{align*}
+}}}
+
+Based on the A-Priori property, which tells us that every subset of a frequent itemset is also frequent, both {{{$I_{k-1}^{(1)}$}}} and {{{$I_{k-1}^{(2)}$}}} belong to {{{$L_{k-1}$}}} - the set of frequent itemsets of size {{{$k-1$}}}.
+
+{{{
+\[ I_{k-1}^{(1)}, I_{k-1}^{(2)} \in L_{k-1} \]
+}}}
+
+You might have noticed that we selected {{{$I_{k-1}^{(1)}$}}} and {{{$I_{k-1}^{(2)}$}}} in such way that they satisfy the A-Priori's join condition described in Function *@funJoinCondition*:	
+
+# They share the first {{{$k-2$}}} items
+# The last element of {{{$I_{k-1}^{(1)}$}}} is smaller than the last element of {{{$I_{k-1}^{(2)}$}}} because elements of itemset {{{$I_k$}}} are sorted and therefore {{{$i_{k-1} < i_k$}}}
+
+This means that during the join step on set {{{$L_{k-1}$}}}, itemsets {{{$I_{k-1}^{(1)}$}}} and {{{$I_{k-1}^{(2)}$}}} will be joined and therefore:
+
+{{{
+\[ I_k \in L_{k-1} \bowtie L_{k-1} \]
+}}}
+
+{{{$I_k$}}} will not be removed during the prune step because, as we said before, based on the A-Priori property, all subsets of {{{$I_k$}}} are frequent.
+
+Therefore,
+
+{{{
+\[ \forall I_k \in L_k \quad I_k \in C_k \]
+}}}
+
+Which means that
+
+{{{
+\[ L_k \subseteq C_k \]
 }}}
 
 !!! Simple Example
