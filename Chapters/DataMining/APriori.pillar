@@ -1,4 +1,4 @@
-!! A-Priori
+!! A-Priori Algorithm for Mining Frequent Itemsets
 
 In order to improve its sales, a small supermarket has collected the receipts from each customer during one month. They want you to analyse those receipts and find products that are often purchased together and propose a set of rules to recommend products to a customer.
 
@@ -53,19 +53,16 @@ The ''cover'' of an itemset {{{$I$}}} in a set of transactions {{{$T$}}} is a su
 The ''count'' of an item set {{{$I$}}} in a set of trasactions {{{$T$}}} is the number of transactions in which this itemset appears
 
 {{{
-\[ c_T(I) = | K_T(I) | \]
+\[ \eta_T(I) = | K_T(I) | \]
 }}}
 
 The ''support'' of an itemset {{{$I$}}} is the relative frequency of this itemset in a set of transactions {{{$T$}}}
 
 {{{
-\[ s_T(I) = \frac{c_T(I)}{m} \]
+\[ s_T(I) = \frac{\eta_T(I)}{|T|} \]
 }}}
 
-where {{{$m = |T|$}}} is the total number of transactions. Here are the more intuitive interpretations of the support of an itemset:
-
-- the percentage of transactions that contain this set of items
-- the probability that a randomly selected transaction contains this set of items
+where {{{$|T|$}}} is the total number of transactions. Support of an itemset is the percentage of transactions that contain this all of its items.
 
 Given some ''minimum support'' {{{$ s_{min} \in \mathbb{N} $}}}, an itemset {{{$I$}}} is called ''frequent'' if its support {{{$s_T(I)$}}} is greater than or equal to the minimum support. We can define a set of all itemsets that are frequent in a set of transactions {{{$T$}}}:
 
@@ -81,13 +78,17 @@ The goal of frequent itemset mining is to find the set of all frequent itemsets 
 
 !!!! Why this is a complicated problem?
 
-The problem described above seems very simple at the first sight. And it is. We can find all frequent itemsets by looping through a set of all possible sets of items taken from {{{$B$}}} and selecting those that are frequent, i.e. itemsets whose support is greater or equal to the minimum support {{{$s_{min}$}}}.
+At first sight, it may seem that you can solve this problem simply by iterating over all possible itemsets and selecting the ones that pass the minimum support threshold.
 
-The problem is the algorithmic complexity of this search. The set of itemsets {{{$\mathbb{P}(B)$}}} contains all possible combinations of items from {{{$B$}}}. And its size increases exponentially as you increase the size of {{{$B$}}}.
+However, the number of possible itemsets grows very quickly as you increase the size of an item base {{{$B$}}}. Turns out that even for the smallest stores that sell very limited amount of products, a set of all possible combinations of those products will be so big that any analysis on this set becomes infeasible.
+
+Let's take a closer look at this number. If {{{$B$}}} is the item base (for example, a list of all products sold by a supermarket), then the collection of all possible subsets of {{{$B$}}} is called ''powerset'' and denoted {{{$\mathbb{P}(B)$}}}.
 
 {{{
 \[ |\mathbb{P}(B)| = 2^{|B|} \]
 }}}
+
++Powersets>figures/Powersets.png+
 
 !!!! The A-Priori Property
 
@@ -96,41 +97,58 @@ The idea behind A-Priori algorithm is based on a simple intuitive property of it
 In other words,
 
 {{{
-\[ \forall I \subseteq J \subseteq B\ \colon\quad c_T(I) \geq c_T(J) \]
+\[ \forall I \subseteq J \subseteq B\ \colon\quad \eta_T(I) \geq \eta_T(J) \]
 }}}
 
 This fact will be central to everything what comes next, so we will give a small example to convince you in its validity.
 
-{{{
-\begin{example}
-You are given stwo itemsets
+You are given two itemsets
 
+{{{
 \begin{align*}
 I &= \{ \text{bread}, \text{butter} \} \\
 J &= \{ \text{bread}, \text{butter}, \text{salt} \}
 \end{align*}
-
-$J$ is a superset of $I$ because it contains all items of $I$ (bread and butter) and some other items (salt).
-
-Suppose that in a database of transactions $T$ itemset $I$ appears 3 times, meaning that there were 3 customers who bought bread and butter.
-
-\[ c_T(I) = 3 \]
-
-Without knowing anything else about the transaction dataset, we can be certain that itemset $J$ could not appear in it more than 3 times. Why? Well, imagine that it's not the case, and the count of $J$ is greater, let's say that it's equal to 5
-
-\[ c_T(J) = 5 \]
-
-This would mean that there were 5 customers, who bought bread, butter, and salt. But then, each one of them bought bread and butter, which means that $c_T(I)$ is at least 5 (it can be greater because there may be customers who bought bread and butter but no salt).
-\end{example}
 }}}
+
+{{{$J$}}} is a superset of {{{$I$}}} because it contains all items of {{{$I$}}} (bread and butter) and some other items (salt).
+
+Suppose that in a database of transactions {{{$T$}}} itemset {{{$I$}}} appears 3 times, meaning that there were 3 customers who bought bread and butter.
+
+{{{
+\[ \eta_T(I) = 3 \]
+}}}
+
+Without knowing anything else about the transaction dataset, we can be certain that itemset {{{$J$}}} could not appear in it more than 3 times. Why? Imagine that it's not the case, and the count of {{{$J$}}} is greater, let's say that it's equal to 5
+
+{{{
+\[ \eta_T(J) = 5 \]
+}}}
+
+This would mean that there were 5 customers, who bought bread, butter, and salt. But then, each one of them bought bread and butter, which means that {{{$\eta_T(I)$}}} is at least 5 (it can be greater because there may be customers who bought bread and butter but no salt).
 
 Therefore, if an itemset is not frequent, then no superset of this itemset can be frequent:
 
 {{{
-\[ \forall I \subseteq J \subseteq B\ \colon\quad s_T(I) < s_{min} \Rightarrow s_T(J) < s_{min} \]
+\[ \forall I \subseteq J \subseteq B\ \colon\quad s_T(I) < s_{min}\ \ \Rightarrow\ \ s_T(J) < s_{min} \]
 }}}
 
++Frequent Itemsets>figures/FrequentItemsets.png+
+
 !!!! A-Priori Algorithm
+
+We start the A-Priori algorithm by what is often called an ''"initialization step"'' - we build a set {{{$L_1$}}} of all frequent itemsets of size 1. We think of every item {{{$i$}}} from the item base {{{$B$}}} as an itemset with 1 element {{{$I = \{ i \}$}}}. Then we select only those itemsets whose support {{{$s_t(I$}}} is greater than or equal to the given minimum support {{{$s_{min}$}}}.
+
+Then we repeat the following two steps with {{{$k = 2, 3, \dots$}}} as long as the set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets is not empty:
+
+# ''Candidate generation'': we use the set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets to generate {{{$C_k$}}} - a set candidate {{{$k$}}}-itemsets.
+# ''Frequent itemset selection'': we construct the set {{{$L_k$}}} of frequent {{{$k$}}}-itemsets by selecting only those candidates from {{{$C_k$}}} that pass the minimem support threshold.
+
+To get a better intuition on the flow of the A-Priori algorithm, take a look on Figure *@figAPriori*. We start with a set of frequent items {{{$L_1$}}}, use it to generate candidates {{{$C_2$}}}, then select frequent pairs {{{$L_2$}}}, and continue this process until we get an empty set {{{$L_k = \varnothing$}}}.
+
++The flow of A-Priori algorithm>figures/APriori.png|label=figAPriori+
+
+The whole algorithm is formally described with pseudocode as Function *@funAPriori*. The function ==generate_candidates== will be defined in the next section, where we will talk about the process of candidate generation.
 
 {{{
 \begin{algorithm}[H]
@@ -147,9 +165,10 @@ Therefore, if an itemset is not frequent, then no superset of this itemset can b
 	\KwRet $F_T(s_{min})$
  }
  \caption{A-Priori algorithm}
- \label{funApriori}
+ \label{funAPriori}
 \end{algorithm}
 }}}
+
 
 !!!!! Candidate Generation for the A-Priori Algorithm
 
