@@ -42,7 +42,7 @@ We use the word ''itemset'' to denote any set of items selected from the item ba
 \[ I \subseteq B \]
 }}}
 
-In fact, every transaction is an itemset (an itemset that was purchased) and the item base itself is also an itemset.
+In fact, every transaction is an itemset (a set of items that were purchased by acustomer) and the item base itself is also an itemset (a set of all products in the store).
 
 The ''cover'' of an itemset {{{$I$}}} in a set of transactions {{{$T$}}} is a subset of transactions that contain all items from this itemset
 
@@ -74,6 +74,7 @@ The goal of frequent itemset mining is to find the set of all frequent itemsets 
 
 !!!! Extension of the problem: Association Rules Mining
 
+Once we have found the set of frequent itemsets, we can represent each itemset as a rule in form
 
 
 !!!! Why this is a complicated problem?
@@ -88,7 +89,7 @@ Let's take a closer look at this number. If {{{$B$}}} is the item base (for exam
 \[ |\mathbb{P}(B)| = 2^{|B|} \]
 }}}
 
-+Powersets>figures/Powersets.png+
++Hasse diagrams showing sets of all possible itemsets as powersets over the itembase B = {a}, B = {a, b}, and B = {a, b, c}. You can see how fast these diagrams are growing.>figures/Powersets.png+
 
 !!!! The A-Priori Property
 
@@ -241,13 +242,13 @@ The whole algorithm is formally described with pseudocode as Function *@funAPrio
 
 It may not be obvious that by joining the set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets with itself, using the join operation {{{$L_{k-1} \bowtie L_{k-1}$}}} defined above, we cover all possible itemsets of size {{{$k$}}}. In other words, we need to show that {{{$L_k \subseteq C_k$}}}.
 
-Let's take an arbitrary frequent {{{$k$}}}-itemset {{{$I_k \in L_k$}}} and show that it belongs to {{{$C_k$}}}:
+Let's show that an arbitrary frequent {{{$k$}}}-itemset {{{$I_k \in L_k$}}} will be included into {{{$C_k$}}} when we generate {{{$C_k$}}} from {{{$L_{k-1}$}}}:
 
 {{{
 \[ I_k = \{ i_1, i_2, \dots, i_k \} \]
 }}}
 
-We can extract the following two subsets of size {{{$k-1$}}} from it:
+We can extract the following two subsets of size {{{$k-1$}}} from itemset {{{$I_k$}}}:
 
 {{{
 \begin{align*}
