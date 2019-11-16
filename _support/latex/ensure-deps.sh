@@ -1,7 +1,7 @@
 #!/bin/bash
 
 xargs tlmgr install <<DEPS
-     algorithm2e
+    algorithm2e
     ctablestack
     environ
     filehook
@@ -11,6 +11,7 @@ xargs tlmgr install <<DEPS
     gentium-tug
     graphics
     import
+    ifoddpage
     listings
     luatexbase
     memoir
