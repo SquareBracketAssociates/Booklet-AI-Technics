@@ -1,6 +1,9 @@
 #!/bin/bash
 
 xargs tlmgr install <<DEPS
+    collection-fontsrecommended
+    collection-mathscience
+
     algorithm2e
     ctablestack
     environ
