@@ -27,6 +27,7 @@ xargs tlmgr install <<DEPS
     ragged2e
     relsize
     tcolorbox
+    textcase
     tools
     trimspaces
     ulem
