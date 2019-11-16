@@ -1,6 +1,7 @@
 #!/bin/bash
 
 xargs tlmgr install <<DEPS
+     algorithm2e
     ctablestack
     environ
     filehook
