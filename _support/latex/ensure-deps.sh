@@ -15,6 +15,7 @@ xargs tlmgr install <<DEPS
     import
     listings
     luatexbase
+    mdframed
     memoir
     multirow
     opensans
