@@ -10,8 +10,9 @@ xargs tlmgr install <<DEPS
     footmisc
     gentium-tug
     graphics
-    import
+    hyphen-english
     ifoddpage
+    import
     listings
     luatexbase
     memoir
@@ -19,8 +20,8 @@ xargs tlmgr install <<DEPS
     opensans
     pgf
     polyglossia
-    hyphen-english
     ragged2e
+    relsize
     tcolorbox
     tools
     trimspaces
