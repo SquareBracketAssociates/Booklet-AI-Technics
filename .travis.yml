@@ -21,7 +21,7 @@ install:
   - ./_support/latex/ensure-deps.sh
 
 script:
-  - pillar build pdf
+  - pillar build pdf || cat _result/pdf/book.log
 
 after_success:
   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
