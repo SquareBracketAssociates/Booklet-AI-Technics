@@ -1,9 +1,12 @@
 !! A-Priori Algorithm for Mining Frequent Itemsets
 
-In order to improve its sales, a small supermarket has collected the receipts from each customer during one month. They want you to analyse those receipts and find products that are often purchased together and propose a set of rules to recommend products to a customer.
+Modern retailers collect massive amounts of sales data - the logs of online and offline transactions that are commonly referred to as the ''basket data''. This data allows us to analyse customer behavior and make better management decisions. Which items should we put on sale? How to group items together on the shelves? Which items should we recommend to a specific customer?
 
-For example, you can produce a rule =={wine, ham} => {cheese, bread}==  which means that customers who buy wine and ham, are also likely to buy cheese and bread. So we can recommend these products to them.
+Many of these problems can be solved by scanning the database of transactions and identifying ''frequent itemsets'' - the groups of products that are often purchased together. If we know that customers tend to buy bread, butter, and milk together, then we can place them close to each other.
 
+By finding frequent sets of items, we can also produce association rules between products. For example, if we realise that bread, butter, and milk appear together in more than 5\% of transactions, we can go further and calculate that 90\% of customers who purchase bread and butter, also purchase milk. This gives us an association rule =={bread, butter} => {milk}== that can be used to recommend products to customers or sell them together with a discount.
+
+In this chapter, we discuss ''A-Priori'' - a fast and efficient algorithm for mining frequent itemsets and finding association rules.
 
 !!! What is it?
 @sec:APriori-WhatIsIt
@@ -18,6 +21,8 @@ The applications of A-Priori go far beyond market basket analysis.
 
 !!! Formal Definition
 @sec:APriori-Definition
+
+Before going further, we must give a formal definition of the problem and the A-Priori algorithm. This section will contain a lot of math, but we believe that going slowly through the math and helping you understand the algorithm in all its details is vital before we start implementing it.
 
 !!!! The Problem of Mining Frequent Itemsets
 
@@ -79,7 +84,7 @@ Once we have found the set of frequent itemsets, we can represent each itemset a
 
 !!!! Why this is a complicated problem?
 
-At first sight, it may seem that you can solve this problem simply by iterating over all possible itemsets and selecting the ones that pass the minimum support threshold.
+It may seem that we can find all frequent itemsets in a database of transactions simply by iterating over all possible itemsets and selecting the ones that pass the minimum support threshold.
 
 However, the number of possible itemsets grows very quickly as you increase the size of an item base {{{$B$}}}. Turns out that even for the smallest stores that sell very limited amount of products, a set of all possible combinations of those products will be so big that any analysis on this set becomes infeasible.
 
@@ -155,7 +160,6 @@ The whole algorithm is formally described with pseudocode as Function *@funAPrio
 \begin{algorithm}[H]
  \KwData{Database of transactions $T$ and a support threshold $s_{min}$}
  \KwResult{A set $F_T(s_{min})$ of all frequent itemsets in $T$}
- ~\\
  \Fn{apriori(T, $s_{min}$)}{
  	$L_1 \gets$ \{frequent 1-itemsets\}\\
  	\For{($k = 2;\ L_{k-1} \neq \varnothing;\ k++$)}{
@@ -170,14 +174,35 @@ The whole algorithm is formally described with pseudocode as Function *@funAPrio
 \end{algorithm}
 }}}
 
-
 !!!!! Candidate Generation for the A-Priori Algorithm
+@sec:APriori-CandidateGeneration
+
+In this section, we will take a closer look at the candidate generation for the A-Priori algorithm. At every iteration, it uses previously generated set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets to generate a set {{{$C_k$}}} containing candidate itemsets of size {{{$k$}}}. This is done in two steps:
+
+% I write it in LaTeX because I need to insert equations into the list environment without breaking it into multiple lists
+{{{
+\begin{enumerate}
+\item \textbf{Join step} - we join the set $L_{k-1}$ with itself (this operation is denoted as $L_{k-1} \bowtie L_{k-1}$) according to the rules
+\begin{itemize}
+\item Every two itemsets $I = \{ i_1, i_2, \dots, i_{k-1} \}$ and $J = \{ j_1, j_2, \dots, j_{k-1} \}$ selected from $L_{k-1}$ can be joined if their first $k-2$ elements are the same and the last element of $I$ is smaller than the last element of $J$ (this ensures that the resulted itemset will be sorted and there will be no duplicate candidates)
+
+\[ (i_1 = j_1) \land (i_2 = j_2) \land \dots \land (i_{k-2} = j_{k-2}) \land (i_{k-1} < j_{k-1}) \]
+
+\item If two itemsets $I$ and $J$ can be joined, we join them into a $k$-itemset $Q$ by taking the first $k-2$ elements that they have in common, and appending to them the last element of $I$ followed by the last element of $J$
+
+\[ Q = \{ i_1, i_2, \dots, i_{k-2}, i_{k-1}, j_{k-1} \} \]
+\end{itemize}
+
+\item \textbf{Prune step} - we remove all candidates that have at least one subset of size $k-1$ that is not in $L_{k-1}$.
+\end{enumerate}
+}}}
+
+You can see the pseudocode of the candidate generation procedure in Function *@funCandidateGeneration*.
 
 {{{
-\begin{algorithm}[H]
+\begin{algorithm}
  \KwData{A set of frequent ($k-1$)-itemsets $L_{k-1}$}
  \KwResult{A set of candidate $k$-itemsets $C_k$}
- ~\\
  \Fn{generate\_candidates($L_{k-1}$)}{
  	$C_k \gets$ \{\}\\
  	\ForAll(\tcp*[f]{join step}){$I \in L_{k-1}$}{
@@ -197,16 +222,6 @@ The whole algorithm is formally described with pseudocode as Function *@funAPrio
  	}
 	\KwRet $C_k$
  }
- \caption{Candidate generation for the A-Priori algorithm}
- \label{funCandidateGeneration}
-\end{algorithm}
-}}}
-
-{{{
-\begin{algorithm}[H]
- \KwData{Two frequent $(k-1)$-itemsets $I, J \in L_{k-1}$ where $I = \{ i_1, i_2, \dots, i_{k-1} \}$ and $J = \{ j_1, j_2, \dots, j_{k-1} \}$}
- \KwResult{A boolean value telling us if $I$ and $J$ can be joined}
- ~\\
  \Fn{can\_be\_joined(I, J)}{
  	\For{$p \gets 1$ \KwTo $k-2$}{
  		\If{$i_p$ != $j_p$}{
@@ -215,16 +230,6 @@ The whole algorithm is formally described with pseudocode as Function *@funAPrio
 	 }
 	 \KwRet $i_{k-1} < j_{k-1}$
  }
- \caption{Testing if two itemsets can be joined}
- \label{funJoinCondition}
-\end{algorithm}
-}}}
-
-{{{
-\begin{algorithm}[H]
- \KwData{Two frequent $(k-1)$-itemsets $I, J \in L_{k-1}$ where $I = \{ i_1, i_2, \dots, i_{k-1} \}$ and $J = \{ j_1, j_2, \dots, j_{k-1} \}$}
- \KwResult{A new itemset $Q$ of size $k$ constructed by joining $I$ and $J$}
- ~\\
  \Fn{join(I, J)}{
  	$Q \gets \{\}$ \\
  	\For{$p \gets 1$ \KwTo $k-1$}{
@@ -233,8 +238,8 @@ The whole algorithm is formally described with pseudocode as Function *@funAPrio
  	Q.add($j_{k-1}$) \\
  	\KwRet Q
  }
- \caption{Joining two itemsets to generate candidates for the A-Priori algorithm}
- \label{funJoin}
+ \caption{Candidate generation for the A-Priori algorithm}
+ \label{funCandidateGeneration}
 \end{algorithm}
 }}}
 
@@ -291,6 +296,10 @@ Which means that
 !!! Simple Example
 @sec:APriori-SimpleExample
 
+In this section, we will give a simple example of finding frequent itemsets and association rules using A-Priori algorithm.
+
+Given a support threshold {{{$s_{min} = 1/3$}}}, we need to find frequent itemsets in the following database of transactions {{{$T$}}}:
+
 |! TID |! Transaction
 | 1 | {eggs, milk, butter}
 | 2 | {milk, cereal}
@@ -299,6 +308,120 @@ Which means that
 | 5 | {bread, bacon, eggs}
 | 6 | {bread, avocado, butter, bananas}
 
+This means that we have to identify all possible combinations of products that appear in at least 33.33\% of transactions (at least 2 out of 6).
+
+The item base is the set of all products that appear in transactions:
+
+{{{
+\[ B = \{ eggs, milk, butter, cereal, bacon, bread, avocado, bananas \} \]
+}}}
+
+We start by encoding every product in the item base with an integer number:
+
+|! Product |! Code |! Product |!Code
+| eggs | 1 | bacon | 5
+| milk | 2 | bread | 6
+| butter | 3 | avocado | 7
+| cereal | 4 | bananas | 8
+
+This gives us the encoded database of transactions:
+
+|! TID |! Transaction
+| 1 | {1, 2, 3}
+| 2 | {2, 4}
+| 3 | {1, 5}
+| 4 | {3, 6}
+| 5 | {1, 5, 6}
+| 6 | {3, 6, 7, 8}
+
+To initialize the A-Priori algorithm, we need to construct the set {{{$L_1$}}} containing all frequent 1-itemsets. To do that, we first create a set of candidates {{{$C_1$}}} - all items from the encoded item base {{{$B$}}} represented as itemsets of size 1:
+
+{{{
+\[ C_1 = \{ \{1\}, \{2\}, \{3\}, \{4\}, \{5\}, \{6\}, \{7\}, \{8\} \} \]
+}}}
+
+Now we calculate support of each candidate itemset:
+
+{{{
+\begin{center}
+\begin{tabular}{cc}
+$s_T(\{1\}) = 1/2$ & $s_T(\{5\}) = 1/3$ \\
+$s_T(\{2\}) = 1/3$ & $s_T(\{6\}) = 1/2$ \\
+$s_T(\{3\}) = 1/2$ & $s_T(\{7\}) = 1/6$ \\
+$s_T(\{4\}) = 1/6$ & $s_T(\{8\}) = 1/6$ \\
+\end{tabular}
+\end{center}
+}}}
+
+We can see that itemsets {{{$\{4\}$}}}, {{{$\{7\}$}}}, and {{{$\{8\}$}}} (cereal, avocado, and bananas) did not pass the minimum support threshold. They don't appear in transactions often enough to be of any interest to us. And based on the A-Priori property, any set of items that includes at least one of those items, can not have higher support than 1/6. Therefore, items 4, 7, and 8 and all their supersets will be excluded from further analysis.
+
+Other itemsets have passed the support threshold, which means that they are frequent. We collect them into the set of frequent 1-itemsets:
+
+{{{
+\[ L_1 = \{ \{1\}, \{2\}, \{3\}, \{5\}, \{6\} \} \]
+}}}
+
+Now we generate the candidates of size 2. To do that, we first join the set of frequent 1-itemsets {{{$L_1$}}} with itself according to the rules of a join step described in Section *@sec:APriori-CandidateGeneration*:
+
+{{{
+\[ L_1 \bowtie L_1 = \{ \{1,2\}, \{1, 3\}, \{1, 5\}, \{1, 6\}, \{2, 3\}, \{2, 5\}, \{2, 6\}, \{3, 5\}, \{3, 6\}, \{5, 6\} \} \]
+}}}
+
+Prune step of the algorithm deletes all itemsets of size {{{$k$}}} that contain at least one subset of size {{{$k-1$}}} which is not in {{{$L_{k-1}$}}}. For {{{$k=2$}}}, all itemsets included in {{{$L_1 \bowtie L_1$}}} are composed only of 1-itemsets taken from {{{$L_1$}}}. So the prune step will not delete any items and the set of candidate itemsets is the same as the result of a join step:
+
+{{{
+\[ C_1 = L_1 \bowtie L_1 \]
+}}}
+
+Once again, we calculate support of all candidate itemsets:
+
+{{{
+\begin{center}
+\begin{tabular}{cc}
+$s_T(\{1,2\}) = 1/6$ & $s_T(\{2,5\}) = 0$ \\
+$s_T(\{1,3\}) = 1/6$ & $s_T(\{2,6\}) = 0$ \\
+$s_T(\{1,5\}) = 1/3$ & $s_T(\{3,5\}) = 0$ \\
+$s_T(\{1,6\}) = 1/6$ & $s_T(\{3,6\}) = 1/3$ \\
+$s_T(\{2,3\}) = 1/6$ & $s_T(\{5,6\}) = 1/6$ \\
+\end{tabular}
+\end{center}
+}}}
+
+Only two itemsets have passed the support thresholds, so only they are selected into the set of all frequent 2-itemsets:
+
+{{{
+\[ L_2 = \{ \{1,5\}, \{3,6\} \} \]
+}}}
+
+On the next iteration, join step produces an empty set, because the only pair of itemsets from {{{$L_2$}}} does not satisfy the join conditions listed in Section *@sec:APriori-CandidateGeneration* and can not be joined:
+
+{{{
+\[ L_2 \bowtie L_2 = \varnothing \]
+}}}
+
+This means that the set of candidates {{{$C_3$}}} and the set of frequent itemsets {{{$L_3$}}} are also empty and the algorithm stops here:
+
+{{{
+\[ C_3 = L_3 = \varnothing \]
+}}}
+
+The set of all frequent itemsets that we were trying to find is the union of {{{$L_1$}}} and {{{$L_2$}}}:
+
+{{{
+\[ F_T(s_{min} = 1/3) = L_1 \cup L_2 = \{ \{1\}, \{2\}, \{3\}, \{5\}, \{6\}, \{1,5\}, \{3,6\} \} \]
+}}}
+
+We can now decode them using our encoding table:
+
+|! Frequent itemsets
+| {eggs}
+| {milk}
+| {bacon}
+| {bread}
+| {eggs, bacon}
+| {butter, bread}
+
+These are all possible sets of products that appear in at least 33.33\% of transactions.
 
 !!! Designing the API
 @sec:APriori-API
