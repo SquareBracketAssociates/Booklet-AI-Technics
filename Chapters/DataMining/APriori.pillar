@@ -4,7 +4,7 @@ Modern retailers collect massive amounts of sales data - the logs of online and 
 
 Many of these problems can be solved by scanning the database of transactions and identifying ''frequent itemsets'' - the groups of products that are often purchased together. If we know that customers tend to buy bread, butter, and milk together, then we can place them close to each other.
 
-By finding frequent sets of items, we can also produce association rules between products. For example, if we realise that bread, butter, and milk appear together in more than 5\% of transactions, we can go further and calculate that 90\% of customers who purchase bread and butter, also purchase milk. This gives us an association rule =={bread, butter} => {milk}== that can be used to recommend products to customers or sell them together with a discount.
+By finding frequent sets of items, we can also produce association rules between products. For example, if we realise that bread, butter, and milk appear together in more than 5\% of transactions, we can go further and calculate that 90\% of customers who purchase bread and butter, also purchase milk. This gives us an association rule {bread, butter} {{{$\Rightarrow$}}} {milk} that can be used to recommend products to customers or sell them together with a discount.
 
 In this chapter, we discuss ''A-Priori'' - a fast and efficient algorithm for mining frequent itemsets and finding association rules.
 
@@ -79,8 +79,60 @@ The goal of frequent itemset mining is to find the set of all frequent itemsets 
 
 !!!! Extension of the problem: Association Rules Mining
 
-Once we have found the set of frequent itemsets, we can represent each itemset as a rule in form
+Once we have found the set of frequent itemsets {{{$F_T(s_{min})$}}}, we can represent each itemset {{{$Q \in F_T(s_{min})$}}} as a rule in form {{{$I \Rightarrow J$}}} where itemset {{{$I$}}} is a subset of {{{$Q$}}} such that {{{$I \neq \varnothing$}}} and {{{$I \neq Q$}}} and itemset {{{$J$}}} is a complement {{{$Q \setminus I$}}}.
 
+For example, itemset {{{$\{ bread, butter, milk \}$}}} produces 6 association rules:
+
+{{{
+\[ \{ bread, butter \} \Rightarrow \{ milk \} \]
+\[ \{ bread, milk \} \Rightarrow \{ butter \} \]
+\[ \{ butter, milk \} \Rightarrow \{ bread \} \]
+\[ \{ bread \} \Rightarrow \{ butter, milk \} \]
+\[ \{ butter \} \Rightarrow \{ bread, milk \} \]
+\[ \{ milk \} \Rightarrow \{ bread, butter \} \]
+}}}
+
+In the context of basket analysis, association rules can be interpreted in the following way:
+
+- {{{$\{ beer, peanuts \} \Rightarrow \{ chips \}$}}} - to every customer who buys beer and peanuts we should also recommend chips.
+- {{{$ \{ tea \} \Rightarrow \{ sugar, lemon \} $}}} - to every customer who buys tea we also recommend sugar and lemon.
+
+Every rule {{{$I \Rightarrow J$}}} has count and support in the databese of transactions. They are equal to the count and support of the itemset {{{$Q = I \cup J$}}} from which that rule was generated:
+
+{{{
+\[ \eta_T(I \Rightarrow J) = \eta_T(I \cup J) \]
+\[ s_T(I \Rightarrow J) = s_T(I \cup J) \]
+}}}
+
+It is also a common practice to calculate ''confidence'' {{{$c_T(I \Rightarrow J)$}}}  and ''lift'' {{{$l_T(I \Rightarrow J)$}}} of an association rule and use them to filter rules by specifying minimum confidence {{{$c_{min}$}}} or minimum lift {{{$l_{min}$}}} threshold.
+
+!!!!! Confidence
+
+''Confidence'' of an association rule {{{$I \Rightarrow J$}}} is a conditional probability of itemset {{{$J$}}} appearing in an arbitrary transaction {{{$t \in T$}}} given that the itemset {{{$I$}}} has appeared in that transaction:
+
+{{{
+\[ c_T(I \Rightarrow J) = P(J|I) = \frac{\eta_T(I \cup J)}{\eta_T(I)} = \frac{s_T(I \cup J)}{s_T(I)} \]
+}}}
+
+In terms of basket anlysis, confidence {{{$c_T(I \Rightarrow J)$}}} tells us what percent of customers who purchased all products from itemset {{{$I$}}} have also purchased all products from itemset {{{$J$}}}.
+
+!!!!! Lift
+
+''Lift'' of an association rule {{{$I \Rightarrow J$}}} is a measure of correlation between {{{$J$}}} and {{{$I$}}}:
+
+{{{
+\[ l_T(I \Rightarrow J) = \frac{P(I \cup J)}{P(I)P(J)} = \frac{s_T(I \cup J)}{s_T(I)s_T(J)} \]
+}}}
+
+If occurences of {{{$I$}}} and {{{$J$}}} are independent, then {{{$P(I \cup J) = P(I)P(J)$}}} and {{{$l_T(I \Rightarrow J) = 1$}}}. Otherwise, if {{{$l_T(I \Rightarrow J) > 1$}}}, this indicates a positive correlation (people who purchased {{{$I$}}} are likely to also purchase {{{$J$}}}) and if {{{$l_T(I \Rightarrow J) < 1$}}}, then the correlation is negative (people who purchased {{{$I$}}} will most likely not purchase {{{$J$}}}).
+
+Lift {{{$l_T(I \Rightarrow J)$}}} can also be interpreted as a measure of how much the relative frequency of {{{$J$}}} will increase if transactions are restricted to only those that contain {{{$I$}}}:
+
+{{{
+\[ l_T(I \Rightarrow J) = \frac{c_T(I \Rightarrow J)}{c_T(\varnothing \Rightarrow J)} = \frac{c_T(I \Rightarrow J)}{s_T(J)} \]
+}}}
+
+We invite you to prove that those two definitions of lift are equivalent.
 
 !!!! Why this is a complicated problem?
 
@@ -543,3 +595,29 @@ rules first lift.
 # ""Frequent item set mining"" by Christian Borgelt ${cite:Borg12a}$
 # Chapter 6 of ""Data Mining: Concepts and Techniques"" by Jiawei Han, Micheline Kamber, and Jian Pei ${cite:Han11a}$
 # Chapter 6 of ""Mining of Massive Datasets"" by Jure Leskovec, Anand Rajaraman, and Jeffrey D. Ullman ${cite:Lesk14a}$
+
+!!! List of notations used in this chapter
+@sec:APriori-Notation
+
+|! Symbol |! Interpretation
+| {{{$i_1, \dots, i_k$}}} | items (products)
+| {{{$t_1, \dots, t_m$}}} | transactions
+| {{{$I, J, Q$}}} | itemsets
+| {{{$I_k, J_k, Q_k$}}} | itemsets of size k or k-itemsets
+| {{{$I \Rightarrow J$}}} | association rule
+| {{{$B$}}} | item base
+| {{{$T$}}} | database of transactions
+| {{{$K_T(I)$}}} | cover of itemset {{{$I$}}} in a database of transactions {{{$T$}}}
+| {{{$\eta_T(I)$}}} | count of itemset {{{$I$}}} in a database of transactions {{{$T$}}}
+| {{{$s_T(I)$}}} | support of itemset {{{$I$}}} in a database of transactions {{{$T$}}}
+| {{{$c_T(I \Rightarrow J)$}}} | confidence of association rule {{{$I \Rightarrow J$}}} in a database of transactions {{{$T$}}}
+| {{{$l_T(I \Rightarrow J)$}}} | lift of association rule {{{$I \Rightarrow J$}}} in a database of transactions {{{$T$}}}
+| {{{$s_{min}$}}} | minimum support threshold
+| {{{$c_{min}$}}} | minimum confidence threshold
+| {{{$l_{min}$}}} | minimum lift threshold
+| {{{$C_k$}}} | set of candidate itemsets of size k
+| {{{$L_k$}}} | set of frequent itemsets of size k
+| {{{$L_k \bowtie L_k$}}} | set {{{$L_k$}}} joined with itself according to the rules defined in this chapter
+| {{{$F_T(s_{min})$}}} | set of all frequent itemsets in the database of transactions {{{$T$}}} with minimum support {{{$s_{min}$}}}
+| {{{$\mathbb{P}(B)$}}} | powerset of {{{B}}}
+| {{{$P(J \vert I)$}}} | conditional probability of {{{$J$}}} given {{{$I$}}}
