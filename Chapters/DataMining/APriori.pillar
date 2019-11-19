@@ -310,6 +310,10 @@ Given a support threshold {{{$s_{min} = 1/3$}}}, we need to find frequent itemse
 
 This means that we have to identify all possible combinations of products that appear in at least 33.33\% of transactions (at least 2 out of 6).
 
+We will then use those frequent itemsets to produce association rules for the two values of minimum confidence threshold: {{{$c_{min} = 2/3$}}} and {{{$c_{min} = 1$}}}.
+
+!!!! Mining Frequent Itemsets
+
 The item base is the set of all products that appear in transactions:
 
 {{{
@@ -344,7 +348,7 @@ Now we calculate support of each candidate itemset:
 
 {{{
 \begin{center}
-\begin{tabular}{cc}
+\begin{tabular}{ll}
 $s_T(\{1\}) = 1/2$ & $s_T(\{5\}) = 1/3$ \\
 $s_T(\{2\}) = 1/3$ & $s_T(\{6\}) = 1/2$ \\
 $s_T(\{3\}) = 1/2$ & $s_T(\{7\}) = 1/6$ \\
@@ -353,7 +357,7 @@ $s_T(\{4\}) = 1/6$ & $s_T(\{8\}) = 1/6$ \\
 \end{center}
 }}}
 
-We can see that itemsets {{{$\{4\}$}}}, {{{$\{7\}$}}}, and {{{$\{8\}$}}} (cereal, avocado, and bananas) did not pass the minimum support threshold. They don't appear in transactions often enough to be of any interest to us. And based on the A-Priori property, any set of items that includes at least one of those items, can not have higher support than 1/6. Therefore, items 4, 7, and 8 and all their supersets will be excluded from further analysis.
+We can see that itemsets {{{$\{4\}$}}}, {{{$\{7\}$}}}, and {{{$\{8\}$}}} (cereal, avocado, and bananas) did not pass the minimum support threshold of 1/3. They don't appear in transactions often enough to be of any interest to us. And based on the A-Priori property, any set of items that includes at least one of those items, can not have higher support than 1/6. Therefore, items 4, 7, and 8 and all their supersets will be excluded from further analysis.
 
 Other itemsets have passed the support threshold, which means that they are frequent. We collect them into the set of frequent 1-itemsets:
 
@@ -370,14 +374,14 @@ Now we generate the candidates of size 2. To do that, we first join the set of f
 Prune step of the algorithm deletes all itemsets of size {{{$k$}}} that contain at least one subset of size {{{$k-1$}}} which is not in {{{$L_{k-1}$}}}. For {{{$k=2$}}}, all itemsets included in {{{$L_1 \bowtie L_1$}}} are composed only of 1-itemsets taken from {{{$L_1$}}}. So the prune step will not delete any items and the set of candidate itemsets is the same as the result of a join step:
 
 {{{
-\[ C_1 = L_1 \bowtie L_1 \]
+\[ C_2 = L_1 \bowtie L_1 \]
 }}}
 
 Once again, we calculate support of all candidate itemsets:
 
 {{{
 \begin{center}
-\begin{tabular}{cc}
+\begin{tabular}{ll}
 $s_T(\{1,2\}) = 1/6$ & $s_T(\{2,5\}) = 0$ \\
 $s_T(\{1,3\}) = 1/6$ & $s_T(\{2,6\}) = 0$ \\
 $s_T(\{1,5\}) = 1/3$ & $s_T(\{3,5\}) = 0$ \\
@@ -411,17 +415,78 @@ The set of all frequent itemsets that we were trying to find is the union of {{{
 \[ F_T(s_{min} = 1/3) = L_1 \cup L_2 = \{ \{1\}, \{2\}, \{3\}, \{5\}, \{6\}, \{1,5\}, \{3,6\} \} \]
 }}}
 
-We can now decode them using our encoding table:
+We can now decode them using our encoding table. Below, you can find the list of decoded frequent itemsets together with their count and support values (remember that count is support multiplied by the total number of transactions {{{$|T| = 6$}}}). These are all possible sets of products that appear in at least 33.33\% of transactions:
 
-|! Frequent itemsets
-| {eggs}
-| {milk}
-| {bacon}
-| {bread}
-| {eggs, bacon}
-| {butter, bread}
+|! Frequent itemset |! Count |! Support
+| {eggs} | 3 | 1/2
+| {milk} | 2 | 1/3
+| {butter} | 3 | 1/2
+| {bacon} | 2 | 1/3
+| {bread} | 3 | 1/2
+| {eggs, bacon} | 2 | 1/3
+| {butter, bread} | 2 | 1/3
 
-These are all possible sets of products that appear in at least 33.33\% of transactions.
+!!!! Producing Association Rules
+
+We can represent any itemset with at least 2 elements as an association rule. In our case, we only have two itemsets with more than 1 element: {1, 5} and {3, 6}.
+
+The first itemset {1, 5} (eggs and bacon) can be represented as an association rule in two different ways:
+
+{{{
+\[ \{ 1 \} \Rightarrow \{ 5 \} \]
+\[ \{ 5 \} \Rightarrow \{ 1 \} \]
+}}}
+
+First rule means that to every customer who buys item 1 (eggs), we recommend item 5 (bacon). Second rule goes the other way around - to every customer who buys bacon, we recommend eggs. Notice that these are different rules and one of them may be more relevant than the other.
+
+To measure the relevance of these rules, we calculate their confidence:
+
+{{{
+\[ c_T(\{ 1 \} \Rightarrow \{ 5 \}) = \frac{s_T(\{ 1, 5 \})}{s_T(\{ 1 \})} = \frac23 \]
+\[ c_T(\{ 5 \} \Rightarrow \{ 1 \}) = \frac{s_T(\{ 1, 5 \})}{s_T(\{ 5 \})} = 1 \]
+}}}
+
+We can see that 2 out of 3 customers who bought eggs have also bought bacon. And 100\% of customers who bought bacon have also bought eggs.
+
+We can use the value of confidence to calculate the lift of those rules:
+
+{{{
+\[ l_T(\{ 1 \} \Rightarrow \{ 5 \}) = \frac{c_T(\{ 1 \} \Rightarrow \{ 5 \})}{s_T(\{ 5 \})} = 2 \]
+\[ l_T(\{ 5 \} \Rightarrow \{ 1 \}) = \frac{c_T(\{ 5 \} \Rightarrow \{ 1 \})}{s_T(\{ 1 \})} = 2 \]
+}}}
+
+Now let's produce rules from the second itemset {3, 6} (butter and bread):
+
+{{{
+\[ \{ 3 \} \Rightarrow \{ 6 \} \]
+\[ \{ 6 \} \Rightarrow \{ 3 \} \]
+}}}
+
+Again, we calculate the confidence of both rules:
+
+{{{
+\[ c_T(\{ 3 \} \Rightarrow \{ 6 \}) = \frac{s_T(\{ 3, 6 \})}{s_T(\{ 3 \})} = \frac23 \]
+\[ c_T(\{ 6 \} \Rightarrow \{ 3 \}) = \frac{s_T(\{ 3, 6 \})}{s_T(\{ 6 \})} = \frac23 \]
+}}}
+
+And their lift:
+
+{{{
+\[ l_T(\{ 3 \} \Rightarrow \{ 6 \}) = \frac{c_T(\{ 3 \} \Rightarrow \{ 6 \})}{s_T(\{ 6 \})} = 4/3 \]
+\[ l_T(\{ 6 \} \Rightarrow \{ 3 \}) = \frac{c_T(\{ 6 \} \Rightarrow \{ 3 \})}{s_T(\{ 3 \})} = 4/3 \]
+}}}
+
+Now we decode the items and present rules together with their count, support, confidence, and lift. Count and support of each rule is the same as count and support of the frequent itemset from which this rule was extracted.
+
+|! Association rule |! Count |! Support |! Confidence |! Lift
+| {{{$ \{ eggs \} \Rightarrow \{ bacon \} $}}} | 2 | 1/3 | 2/3 | 2
+| {{{$ \{ bacon \} \Rightarrow \{ eggs \} $}}} | 2 | 1/3 | 1 | 2
+| {{{$ \{ butter \} \Rightarrow \{ bread \} $}}} | 2 | 1/3 | 2/3 | 4/3
+| {{{$ \{ bread \} \Rightarrow \{ butter \} $}}} | 2 | 1/3 | 2/3 | 4/3
+
+With the minimum confidence threshold {{{$c_{min} = 2/3$}}}, all four rules will be selected. And if we set the confidence threshold {{{$c_{min} = 1$}}}, only the rule {{{$ \{ bacon \} \Rightarrow \{ eggs \} $}}} will pass it.
+
+Here is a way to interpret this: According to our database of transactions, 100\% of customers who bought bacon have also bought eggs. This statement is supported by 33.33\% of transactions.
 
 !!! Designing the API
 @sec:APriori-API
