@@ -11,7 +11,7 @@ In this chapter, we discuss ''A-Priori'' - a fast and efficient algorithm for mi
 !!! What is it?
 @sec:APriori-WhatIsIt
 
-A-Priori was originally designed by Agrawal et al. ${cite:Agra94a}$ to discover association rules between items in a large database if sales transactions.
+A-Priori was originally designed by Agrawal et al. ${cite:Agra94a}$  to discover association rules between items in a large database of sale transactions.
 
 !!! Applications
 @sec:APriori-Applications
@@ -32,7 +32,7 @@ We are given a set of items called ''item base''
 \[ B = \{ i_1, \dots, i_n \} \]
 }}}
 
-And a set of ''transactions'' where each transaction is a set of items from the item base {{{$B$}}}
+And a set of ''transactions'' where each transaction is a set of items from the item base {{{$B$}}}:
 
 {{{
 \[ T = \{ t_1, \dots, t_m \} \]
@@ -49,25 +49,25 @@ We use the word ''itemset'' to denote any set of items selected from the item ba
 
 In fact, every transaction is an itemset (a set of items that were purchased by acustomer) and the item base itself is also an itemset (a set of all products in the store).
 
-The ''cover'' of an itemset {{{$I$}}} in a set of transactions {{{$T$}}} is a subset of transactions that contain all items from this itemset
+The ''cover'' of an itemset {{{$I$}}} in a set of transactions {{{$T$}}} is a subset of transactions that contain all items from this itemset:
 
 {{{
 \[ K_T(I) = \{ t_k \in T | I \subseteq t_k \} \]
 }}}
 
-The ''count'' of an item set {{{$I$}}} in a set of trasactions {{{$T$}}} is the number of transactions in which this itemset appears
+The ''count'' of an item set {{{$I$}}} in a set of trasactions {{{$T$}}} is the number of transactions in which this itemset appears:
 
 {{{
 \[ \eta_T(I) = | K_T(I) | \]
 }}}
 
-The ''support'' of an itemset {{{$I$}}} is the relative frequency of this itemset in a set of transactions {{{$T$}}}
+The ''support'' of an itemset {{{$I$}}} is the relative frequency of this itemset in a set of transactions {{{$T$}}}:
 
 {{{
 \[ s_T(I) = \frac{\eta_T(I)}{|T|} \]
 }}}
 
-where {{{$|T|$}}} is the total number of transactions. Support of an itemset is the percentage of transactions that contain this all of its items.
+where {{{$|T|$}}} is the total number of transactions. Support of an itemset is the percentage of transactions that contain all of its items.
 
 Given some ''minimum support'' {{{$ s_{min} \in \mathbb{N} $}}}, an itemset {{{$I$}}} is called ''frequent'' if its support {{{$s_T(I)$}}} is greater than or equal to the minimum support. We can define a set of all itemsets that are frequent in a set of transactions {{{$T$}}}:
 
@@ -97,7 +97,7 @@ In the context of basket analysis, association rules can be interpreted in the f
 - {{{$\{ beer, peanuts \} \Rightarrow \{ chips \}$}}} - to every customer who buys beer and peanuts we should also recommend chips.
 - {{{$ \{ tea \} \Rightarrow \{ sugar, lemon \} $}}} - to every customer who buys tea we also recommend sugar and lemon.
 
-Every rule {{{$I \Rightarrow J$}}} has count and support in the databese of transactions. They are equal to the count and support of the itemset {{{$Q = I \cup J$}}} from which that rule was generated:
+Every rule {{{$I \Rightarrow J$}}} has count and support in the database of transactions. They are equal to the count and support of the itemset {{{$Q = I \cup J$}}} from which that rule was generated:
 
 {{{
 \[ \eta_T(I \Rightarrow J) = \eta_T(I \cup J) \]
@@ -150,7 +150,7 @@ Let's take a closer look at this number. If {{{$B$}}} is the item base (for exam
 
 !!!! The A-Priori Property
 
-The idea behind A-Priori algorithm is based on a simple intuitive property of itemsets: ''if itemset I appears in transactions k times, then there can be no itemset J that contains all elements from I and appers more than k times''.
+The idea behind A-Priori algorithm is based on a simple intuitive property of itemsets: ''if itemset I appears in transactions k times, then there can be no itemset J that contains all elements from I and appears more than k times''.
 
 In other words,
 
@@ -200,7 +200,7 @@ We start the A-Priori algorithm by what is often called an ''"initialization ste
 Then we repeat the following two steps with {{{$k = 2, 3, \dots$}}} as long as the set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets is not empty:
 
 # ''Candidate generation'': we use the set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets to generate {{{$C_k$}}} - a set candidate {{{$k$}}}-itemsets.
-# ''Frequent itemset selection'': we construct the set {{{$L_k$}}} of frequent {{{$k$}}}-itemsets by selecting only those candidates from {{{$C_k$}}} that pass the minimem support threshold.
+# ''Frequent itemset selection'': we construct the set {{{$L_k$}}} of frequent {{{$k$}}}-itemsets by selecting only those candidates from {{{$C_k$}}} that pass the minimum support threshold.
 
 To get a better intuition on the flow of the A-Priori algorithm, take a look on Figure *@figAPriori*. We start with a set of frequent items {{{$L_1$}}}, use it to generate candidates {{{$C_2$}}}, then select frequent pairs {{{$L_2$}}}, and continue this process until we get an empty set {{{$L_k = \varnothing$}}}.
 
@@ -348,7 +348,7 @@ Which means that
 !!! Simple Example
 @sec:APriori-SimpleExample
 
-In this section, we will give a simple example of finding frequent itemsets and association rules using A-Priori algorithm.
+In this section, we give a simple example of finding frequent itemsets and association rules using A-Priori algorithm.
 
 Given a support threshold {{{$s_{min} = 1/3$}}}, we need to find frequent itemsets in the following database of transactions {{{$T$}}}:
 
@@ -480,9 +480,9 @@ We can now decode them using our encoding table. Below, you can find the list of
 
 !!!! Producing Association Rules
 
-We can represent any itemset with at least 2 elements as an association rule. In our case, we only have two itemsets with more than 1 element: {1, 5} and {3, 6}.
+Any itemset with at least 2 elements can produce multiple association rules. In our case, we only have two frequent itemsets with more than 1 element: {1, 5} and {3, 6}.
 
-The first itemset {1, 5} (eggs and bacon) can be represented as an association rule in two different ways:
+Knowing that itemset {1, 5} is frequent (customers often buy eggs and bacon together), we can generate two association rules from it:
 
 {{{
 \[ \{ 1 \} \Rightarrow \{ 5 \} \]
@@ -498,7 +498,7 @@ To measure the relevance of these rules, we calculate their confidence:
 \[ c_T(\{ 5 \} \Rightarrow \{ 1 \}) = \frac{s_T(\{ 1, 5 \})}{s_T(\{ 5 \})} = 1 \]
 }}}
 
-We can see that 2 out of 3 customers who bought eggs have also bought bacon. And 100\% of customers who bought bacon have also bought eggs.
+We see that 2 out of 3 customers who bought eggs have also bought bacon. And 100\% of customers who bought bacon have also bought eggs.
 
 We can use the value of confidence to calculate the lift of those rules:
 
@@ -652,7 +652,7 @@ Itemset >> allSubsets
 	^ (self combinations copyWithout: (self asArray)) collect: #asItemset
 ]]]
 
-Finally, on the prune step of A-Priori algorithm, we will have to check if all {{{$(k-1)$}}}-subsets of a given candidate {{{$k$}}}-itemset are frequent. To do that, we first need to generate all subsets of a given itemset {{{$I$}}} whose size is one element less than the size of an {{{$I$}}}. We call them largest subsets. For example, largest subsets of itemset {{{$\{ 1, 2, 3 \}$}}} are {{{$\{1, 2\}$}}}, {{{$\{1, 3\}$}}}, and {{{$\{2, 3\}$}}}. We can find them by iteratively removing one element from {{{$I$}}}:
+Finally, on the prune step of A-Priori algorithm, we have to check if all {{{$(k-1)$}}}-subsets of a given candidate {{{$k$}}}-itemset are frequent. To do that, we first need to generate all subsets of a given itemset {{{$I$}}} whose size is one element less than the size of an {{{$I$}}}. We call them largest subsets. For example, largest subsets of itemset {{{$\{ 1, 2, 3 \}$}}} are {{{$\{1, 2\}$}}}, {{{$\{1, 3\}$}}}, and {{{$\{2, 3\}$}}}. We can find them by iteratively removing one element from {{{$I$}}}:
 
 [[[
 Itemset >> allLargestSubsets
@@ -662,7 +662,7 @@ Itemset >> allLargestSubsets
 
 !!!!! Joining Itemsets
 
-As we have discussed in Section *@sec:APriori-Definition*, the join step of A-Priori algorithm joins every two itemsets that saisfy the following condition: {{{$k$}}}-itemset {{{$I$}}} can be joined with {{{$k$}}}-itemset {{{$J$}}} if they share the first {{{$k-1$}}} elements and the last element of {{{$J$}}} is greater than the last element of {{{$I$}}}. To perform this check faster, we don't check if itemsets have same size, because we know that this method will be called by the method ==APriori >> joinFrequentItemsetsOfSize: k== which only iterates over itemsets of size {{{$k$}}}. Notice also that we convert both itemsets to arrays because we only want to compare their elements and not their counts and supports:
+As we have discussed in Section *@sec:APriori-Definition*, the join step of A-Priori algorithm joins every two itemsets that satisfy the following condition: {{{$k$}}}-itemset {{{$I$}}} can be joined with {{{$k$}}}-itemset {{{$J$}}} if they share the first {{{$k-1$}}} elements and the last element of {{{$J$}}} is less than the last element of {{{$I$}}}. To perform this check faster, we don't check if itemsets have same size, because we know that this method will be called by the method ==APriori >> joinFrequentItemsetsOfSize: k== which only iterates over itemsets of size {{{$k$}}}. Notice also that we convert both itemsets to arrays because we only want to compare their elements and not their counts and supports:
 
 [[[
 Itemset >> canBeJoinedWith: anotherItemset
