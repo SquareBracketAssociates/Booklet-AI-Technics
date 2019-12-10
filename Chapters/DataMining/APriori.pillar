@@ -8,11 +8,6 @@ By finding frequent sets of items, we can also produce association rules between
 
 In this chapter, we discuss ''A-Priori'' - a fast and efficient algorithm for mining frequent itemsets and finding association rules.
 
-!!! What is it?
-@sec:APriori-WhatIsIt
-
-A-Priori was originally designed by Agrawal et al. ${cite:Agra94a}$ to discover association rules between items in a large database of sale transactions.
-
 !!! Applications
 @sec:APriori-Applications
 
@@ -22,24 +17,22 @@ The applications of A-Priori go far beyond market basket analysis.
 !!! Formal Definition
 @sec:APriori-Definition
 
-Before going further, we must give a formal definition of the problem and the A-Priori algorithm. This section will contain a lot of math, but we believe that going slowly through the math and helping you understand the algorithm in all its details is vital before we start implementing it.
+In this section, we give a formal definition of the problem and the A-Priori algorithm. We will go slowly through the math and help you understand the algorithm in all its details before we start implementing it.
 
-!!!! The Problem of Mining Frequent Itemsets
+!!! The Problem of Mining Frequent Itemsets
 
-We are given a set of items called ''item base''
+You are given a set of items called ''item base''. Think of those items as products that are sold at the supermarket:
 
 {{{
 \[ B = \{ i_1, \dots, i_n \} \]
 }}}
 
-And a set of ''transactions'' where each transaction is a set of items from the item base {{{$B$}}}:
+You are also given a set of ''transactions'' {{{$T$}}} where each transaction is a set of items from the item base {{{$B$}}}. Each transaction can represent one receipt - a list of products purchased by a customer in the supermarket:
 
 {{{
 \[ T = \{ t_1, \dots, t_m \} \]
 \[ \forall t_k \in T \quad t_k \subseteq B \]
 }}}
-
-You can think of items as products that are sold at the supermarket, and each transaction as a list of products purchased by one customer (list of products on the receipt).
 
 We use the word ''itemset'' to denote any set of items selected from the item base:
 
@@ -47,7 +40,9 @@ We use the word ''itemset'' to denote any set of items selected from the item ba
 \[ I \subseteq B \]
 }}}
 
-In fact, every transaction is an itemset (a set of items that were purchased by acustomer) and the item base itself is also an itemset (a set of all products in the store).
+In fact, every transaction is an itemset (a set of items that were purchased by a customer) and the item base itself is also an itemset (a set of all products in the supermarket).
+
+We say that itemset {{{$I$}}} ''appears'' in transaction {{{$t$}}} if {{{$t$}}} contains all items from {{{$I$}}}. This means that {{{$I$}}} is a subset of {{{$t$}}}, {{{$I \subseteq t$}}}. We can also say that transaction {{{$t$}}} ''contains'' itemset {{{$I$}}}.
 
 The ''count'' of an item set {{{$I$}}} in a set of trasactions {{{$T$}}} is the number of transactions in which this itemset appears:
 
@@ -55,37 +50,80 @@ The ''count'' of an item set {{{$I$}}} in a set of trasactions {{{$T$}}} is the 
 \[ count(I) = | \{ t_k \in T | I \subseteq t_k \} | \]
 }}}
 
-The ''support'' of an itemset {{{$I$}}} is the relative frequency of this itemset in a set of transactions {{{$T$}}}:
+The ''support'' of an itemset {{{$I$}}} is the relative frequency of this itemset in a set of transactions {{{$T$}}} - the percentage of transactions that contain all items from itemset {{{$I$}}}:
 
 {{{
 \[ support(I) = \frac{count(I)}{|T|} \]
 }}}
 
-where {{{$|T|$}}} is the total number of transactions. Support of an itemset is the percentage of transactions that contain all of its items.
+where {{{$|T|$}}} is the total number of transactions.
 
-Given some ''minimum support'' {{{$ minsup \in \mathbb{N} $}}}, an itemset {{{$I$}}} is called ''frequent'' if its support {{{$support(I)$}}} is greater than or equal to the minimum support. We can define a set of all itemsets that are frequent in a set of transactions {{{$T$}}}:
+Support has a probabilistic interpretation - it is a probability that customer buys all items from itemset {{{$I$}}}:
 
-{{{
-\[ Freq = \{ I \subseteq B | support(I) \geq minsup \} \]
-}}}
+{{{\[ support(I) = P(I) \]}}}
 
-The goal of frequent itemset mining is to find the set of all frequent itemsets {{{$Freq$}}} given a set of transactions {{{$T$}}} and a minimum support {{{$minsup$}}}.
+Given some ''minimum support'' {{{$ minsup \in \mathbb{N} $}}}, an itemset {{{$I$}}} is called ''frequent'' if its support {{{$support(I)$}}} is greater than or equal to the minimum support.
 
-!!!! Why this is a complicated problem?
-
-It may seem that we can find all frequent itemsets in a database of transactions simply by iterating over all possible itemsets and selecting the ones that pass the minimum support threshold.
-
-However, the number of possible itemsets grows very quickly as you increase the size of an item base {{{$B$}}}. Turns out that even for the smallest stores that sell very limited amount of products, a set of all possible combinations of those products will be so big that any analysis on this set becomes infeasible.
-
-Let's take a closer look at this number. If {{{$B$}}} is the item base (for example, a list of all products sold by a supermarket), then the collection of all possible subsets of {{{$B$}}} is called ''powerset'' and denoted {{{$\mathbb{P}(B)$}}}.
+The set of all frequent itemsets in a database of transactions {{{$T$}}} with a support threshold {{{$minsup$}}} is denoted {{{$\mathcal{F}_T(minsup)$}}}. For simplicity, we will write just {{{$\mathcal{F}$}}}:
 
 {{{
-\[ |\mathbb{P}(B)| = 2^{|B|} \]
+\[ \mathcal{F} = \{ I \subseteq B | support(I) \geq minsup \} \]
 }}}
 
-+Hasse diagrams showing sets of all possible itemsets as powersets over the itembase B = {a}, B = {a, b}, and B = {a, b, c}. You can see how fast these diagrams are growing.>figures/Powersets.png+
+{{{
+\begin{tcolorbox}
+The goal of frequent itemset mining is to find the set of all frequent itemsets $\mathcal{F}$ given a set of transactions $T$ and a minimum support $minsup$.
+\end{tcolorbox}
+}}}
 
-!!!! The A-Priori Property
+!!! Example Part 1: Problem Definition
+
+In this section, we give a simple example of finding frequent itemsets and association rules using A-Priori algorithm.
+
+Given a support threshold {{{$minsup = 1/3$}}}, we need to find frequent itemsets in the following database of transactions {{{$T$}}}${footnote:In practice, it is faster to encode all items with integers before applying the APriori algorithm, and then decode the results before presenting them to the user. But encoding is optional and in this example, we process items as strings to make it more clear what is going on. We will discuss item encoding in Section *@sec:APriori-Implementation*.}$:
+
+|! TID |! Transaction
+| 1 | {eggs, milk, butter}
+| 2 | {milk, cereal}
+| 3 | {eggs, bacon}
+| 4 | {bread, butter}
+| 5 | {bread, bacon, eggs}
+| 6 | {bread, avocado, butter, bananas}
+
+This means that we have to identify all possible combinations of products that appear in at least 33.33\% of transactions (at least 2 out of 6).
+
+The item base is the set of all products that appear in transactions:
+
+{{{
+\[ B = \{ eggs, milk, butter, cereal, bacon, bread, avocado, bananas \} \]
+}}}
+
+!!! Why This is a Complicated Problem?
+
+So far, the problem does not seem complicated: you can find all frequent itemsets in a database of transactions simply by iterating over all possible itemsets and selecting the ones that pass the minimum support threshold:
+
+[[[
+itembase combinations select: [ :itemset |
+    itemset support >= minsup ].
+]]]
+
+However, the number of possible itemsets grows very quickly as you increase the size of an item base {{{$B$}}}{{{\footnote{The collection of all possible subsets of $B$ is called \textit{powerset} and denoted $\mathbb{P}(B)$} }}}:
+
+{{{
+\[ |\mathbb{P}(B)| = \sum_{k=0}^{|B|} C_k^{|B|} = 2^{|B|} \]
+}}}
+
+Even for the smallest stores that sell very limited amount of products, a set of all possible combinations of those products will be so big that any analysis on this set becomes practically impossible. Here is an example of how fast the number of possible itemsets grows as we increase the number of products:
+
+|! Number of products |! Number of itemsets
+| 10 | 1024
+| 100 | 1.27e+30
+| 1000 | 1.07e+301
+| 10,000 | 1.99e+3010
+
+To solve the problem of frequent itemset mining, we must therefore reduce the search space and find a smarter way of iterating throgh the potential candidates.
+
+!!! The A-Priori Property
 
 The idea behind A-Priori algorithm is based on a simple intuitive property of itemsets: ''if itemset I appears in transactions k times, then there can be no itemset J that contains all elements from I and appears more than k times''.
 
@@ -101,9 +139,7 @@ Therefore, if an itemset is not frequent, then no superset of this itemset can b
 \[ \forall I \subseteq J \subseteq B\ \colon\quad support(I) < minsup\ \ \Rightarrow\ \ support(J) < minsup \]
 }}}
 
-+Frequent Itemsets>figures/FrequentItemsets.png+
-
-!!!! A-Priori Algorithm
+!!! A-Priori Algorithm
 
 We start the A-Priori algorithm by what is often called an ''"initialization step"'' - we build a set {{{$L_1$}}} of all frequent itemsets of size 1. We think of every item {{{$i$}}} from the item base {{{$B$}}} as an itemset with 1 element {{{$I = \{ i \}$}}}. Then we select only those itemsets whose support is greater than or equal to the given minimum support threshold {{{$minsup$}}}.
 
@@ -136,7 +172,7 @@ The whole algorithm is formally described with pseudocode as Function *@funAPrio
 \end{algorithm}
 }}}
 
-!!!!! Candidate Generation for the A-Priori Algorithm
+!!!! Candidate Generation for the A-Priori Algorithm
 @sec:APriori-CandidateGeneration
 
 In this section, we will take a closer look at the candidate generation for the A-Priori algorithm. At every iteration, it uses previously generated set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets to generate a set {{{$C_k$}}} containing candidate itemsets of size {{{$k$}}}. This is done in two steps:
@@ -205,28 +241,8 @@ You can see the pseudocode of the candidate generation procedure in Function *@f
 \end{algorithm}
 }}}
 
-!!! Simple Example of Mining Frequent Itemsets
+!!! Example Part 2: Mining Frequent Itemsets
 @sec:APriori-SimpleExample
-
-In this section, we give a simple example of finding frequent itemsets and association rules using A-Priori algorithm.
-
-Given a support threshold {{{$minsup = 1/3$}}}, we need to find frequent itemsets in the following database of transactions {{{$T$}}}${footnote:In practice, it is faster to encode all items with integers before applying the APriori algorithm, and then decode the results before presenting them to the user. But encoding is optional and in this example, we process items as strings to make it more clear what is going on. We will discuss item encoding in Section *@sec:APriori-Implementation*.}$:
-
-|! TID |! Transaction
-| 1 | {eggs, milk, butter}
-| 2 | {milk, cereal}
-| 3 | {eggs, bacon}
-| 4 | {bread, butter}
-| 5 | {bread, bacon, eggs}
-| 6 | {bread, avocado, butter, bananas}
-
-This means that we have to identify all possible combinations of products that appear in at least 33.33\% of transactions (at least 2 out of 6).
-
-The item base is the set of all products that appear in transactions:
-
-{{{
-\[ B = \{ eggs, milk, butter, cereal, bacon, bread, avocado, bananas \} \]
-}}}
 
 To initialize the A-Priori algorithm, we need to construct the set {{{$L_1$}}} containing all frequent 1-itemsets. To do that, we first create a set of candidates {{{$C_1$}}} - all items from the encoded item base {{{$B$}}} represented as itemsets of size 1:
 
@@ -345,7 +361,7 @@ Every rule {{{$I \Rightarrow J$}}} has count and support in the database of tran
 
 It is also a common practice to calculate {{{$confidence(I \Rightarrow J)$}}}  and {{{$lift(I \Rightarrow J)$}}} of an association rule and use them to filter rules by specifying minimum confidence {{{$minconf$}}} or minimum lift {{{$minlift$}}} threshold.
 
-!!!!! Confidence
+!!!! Confidence
 
 ''Confidence'' of an association rule {{{$I \Rightarrow J$}}} is a conditional probability of itemset {{{$J$}}} appearing in an arbitrary transaction {{{$t \in T$}}} given that the itemset {{{$I$}}} has appeared in that transaction:
 
@@ -355,7 +371,7 @@ It is also a common practice to calculate {{{$confidence(I \Rightarrow J)$}}}  a
 
 In terms of basket analysis, confidence {{{$confidence(I \Rightarrow J)$}}} tells us what percent of customers who purchased all products from itemset {{{$I$}}} have also purchased all products from itemset {{{$J$}}}.
 
-!!!!! Lift
+!!!! Lift
 
 ''Lift'' of an association rule {{{$I \Rightarrow J$}}} is a measure of correlation between {{{$J$}}} and {{{$I$}}}:
 
@@ -373,7 +389,7 @@ If occurences of {{{$I$}}} and {{{$J$}}} are independent, then {{{$P(I \cup J) =
 
 We invite you to prove that those two definitions of lift are equivalent.
 
-!!! Simple Example of Mining Association Rules
+!!! Example Part 3: Mining Association Rules
 
 In this example, we will use frequent itemsets found in Section *@sec:APriori-SimpleExample* to produce association rules for the two values of minimum confidence threshold: {{{$minconf = 2/3$}}} and {{{$minconf = 1$}}}.
 
@@ -441,6 +457,15 @@ Here is a way to interpret this: According to our database of transactions, 100\
 @sec:APriori-Implementation
 
 We implement both itemset and association rules as classes. 
+
+{{{
+\begin{sidewaysfigure}
+\centering
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{Chapters/DataMining/figures/APrioriUML.pdf}
+\caption{Implementation of the A-Priori algorithm}
+\label{figAPrioriUML}
+\end{sidewaysfigure}
+}}}
 
 !!!! Itemset class
 
