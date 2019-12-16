@@ -223,6 +223,15 @@ In this section, we will take a closer look at the candidate generation for the 
 \end{enumerate}
 }}}
 
+{{{
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth,keepaspectratio]{Chapters/DataMining/figures/CandidateGeneration.pdf}
+\caption{Example of generating a set of candidate itemsets of size 4 ($C_4$) from a set of frequent itemsets of size 3 ($L_3$). At \textbf{join step}, we find every pair of itemsets from $L_3$ that can be joined (both itemsets must share the first 2 elements and the last element of the first itemset in the pair must be smaller than the last element of the second itemset). We join itemsets in each pair by writing down their first 2 common elements, then the last element of the first itemset, and then the last element of the second itemset. As an output of a join step, we get a set $L_3 \bowtie L_3$ containing 4 itemsets of size 4 that could potentially be frequent. At \textbf{prune step}, we select only those itemsets from $L_3 \bowtie L_3$ that satisfy the A-Priori property described by Equation~\ref{eq-APriori-APrioriProperty2}\colon\xspace every subset of a frequent itemset must be frequent. We only need to check if all subsets of size 3 belong to $L_3$. Because we already know that all subsets of every itemset from $L_3$ belong to $L_2$ or $L_1$. You can see that itemset $\{ a, b, c, d \}$ has a non-frequent subset $\{ a, c, d \}$ and itemset $\{ a, b, c, e \}$ has a non-frequent subset $\{ a, c, e \}$. THis means that only two itemsets can be selected as candidates\colon\xspace $C_4 = \{ \{ a, b, d, e \}, \{ b, c, d, e \} \}$.}
+\label{figAPrioriCandidateGeneration}
+\end{figure}
+}}}
+
 You can see the pseudocode of the candidate generation procedure in Function *@funCandidateGeneration*.
 
 {{{
