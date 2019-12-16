@@ -13,13 +13,8 @@ In this chapter, we discuss ''A-Priori'' - a fast and efficient algorithm for mi
 
 The applications of A-Priori go far beyond market basket analysis.
 
-
-!!! Formal Definition
-@sec:APriori-Definition
-
-In this section, we give a formal definition of the problem and the A-Priori algorithm. We will go slowly through the math and help you understand the algorithm in all its details before we start implementing it.
-
 !!! The Problem of Mining Frequent Itemsets
+@sec:APriori-ProblemStatement
 
 You are given a set of items called ''item base''. Think of those items as products that are sold at the supermarket:
 
@@ -78,9 +73,7 @@ The goal of frequent itemset mining is to find the set of all frequent itemsets 
 
 !!! Example Part 1: Problem Definition
 
-In this section, we give a simple example of finding frequent itemsets and association rules using A-Priori algorithm.
-
-Given a support threshold {{{$minsup = 1/3$}}}, we need to find frequent itemsets in the following database of transactions {{{$T$}}}${footnote:In practice, it is faster to encode all items with integers before applying the APriori algorithm, and then decode the results before presenting them to the user. But encoding is optional and in this example, we process items as strings to make it more clear what is going on. We will discuss item encoding in Section *@sec:APriori-Implementation*.}$:
+You are given a database of transactions {{{$T$}}}${footnote:In practice, it is faster to encode all items with integers before applying the APriori algorithm, and then decode the results before presenting them to the user. But encoding is optional and in this example, we process items as strings to make it more clear what is going on. We will discuss item encoding in Section *@sec:APriori-Implementation*.}$:
 
 |! TID |! Transaction
 | 1 | {eggs, milk, butter}
@@ -90,17 +83,19 @@ Given a support threshold {{{$minsup = 1/3$}}}, we need to find frequent itemset
 | 5 | {bread, bacon, eggs}
 | 6 | {bread, avocado, butter, bananas}
 
-This means that we have to identify all possible combinations of products that appear in at least 33.33\% of transactions (at least 2 out of 6).
-
-The item base is the set of all products that appear in transactions:
+Remember that item base is a set of all products. You can construct it simply by selecting unique products from the database of transactions:
 
 {{{
 \[ B = \{ eggs, milk, butter, cereal, bacon, bread, avocado, bananas \} \]
 }}}
 
+Your task is to find a set {{{$\mathcal{F}$}}} of all frequent itemsets in this database given a support threshold {{{$minsup = 1/3$}}}. In other words, you have to identify all possible combinations of products that appear in at least 33.33\% of transactions (at least 2 out of 6).
+
+Turns out, this is not an easy thing to do.
+
 !!! Why This is a Complicated Problem?
 
-So far, the problem does not seem complicated: you can find all frequent itemsets in a database of transactions simply by iterating over all possible itemsets and selecting the ones that pass the minimum support threshold:
+So far, the problem does not seem complicated: you can find all frequent itemsets in a database of transactions simply by iterating over all possible sets of items and selecting the ones that pass the minimum support threshold:
 
 [[[
 itembase combinations select: [ :itemset |
@@ -113,31 +108,64 @@ However, the number of possible itemsets grows very quickly as you increase the 
 \[ |\mathbb{P}(B)| = \sum_{k=0}^{|B|} C_k^{|B|} = 2^{|B|} \]
 }}}
 
-Even for the smallest stores that sell very limited amount of products, a set of all possible combinations of those products will be so big that any analysis on this set becomes practically impossible. Here is an example of how fast the number of possible itemsets grows as we increase the number of products:
+Even for the smallest stores that sell very limited number of products, a set of all possible combinations of those products is so big that any analysis on this set becomes practically impossible. Here is an example of how fast the total number of itemsets grows as we increase the number of products:
 
 |! Number of products |! Number of itemsets
-| 10 | 1024
-| 100 | 1.27e+30
-| 1000 | 1.07e+301
-| 10,000 | 1.99e+3010
+| 10 | {{{$2^{10} = 1024$}}}
+| 100 | {{{$2^{100} \approx 1.27e+30$}}}
+| 1000 | {{{$2^{1000} \approx 1.07e+301$}}}
+| 10,000 | {{{$2^{10,000} \approx 1.99e+3010$}}}
 
-To solve the problem of frequent itemset mining, we must therefore reduce the search space and find a smarter way of iterating throgh the potential candidates.
+To solve the problem of frequent itemset mining, we must therefore reduce the search space and find a smarter way of selecting the potential candidates. And that's what A-Priori algorithm is all about.
 
 !!! The A-Priori Property
 
-The idea behind A-Priori algorithm is based on a simple intuitive property of itemsets: ''if itemset I appears in transactions k times, then there can be no itemset J that contains all elements from I and appears more than k times''.
+The idea behind an A-Priori algorithm is based on a simple intuitive property of itemsets: ''if itemset I appears in transactions k times, then there can be no itemset J that contains all elements from I and appears more than k times''.
 
 In other words,
 
 {{{
-\[ \forall I \subseteq J \subseteq B\ \colon\quad count(I) \geq count(J) \]
+\begin{equation}
+\forall I \subseteq J\ \colon\quad count(I) \geq count(J)
+\label{eq-APriori-CountProperty}
+\end{equation}
 }}}
 
-Therefore, if an itemset is not frequent, then no superset of this itemset can be frequent:
+If you are not convinced and the property does not seem intuitive to you, take a look at the example that we provide at the end of this chapter in Section *@sec:APriori-ProvingAPrioriProperty*.
+
+Support of an itemset is its count divided by the number of transactions. Therefore, from Equation *@eq-APriori-CountProperty* immediately follows that
 
 {{{
-\[ \forall I \subseteq J \subseteq B\ \colon\quad support(I) < minsup\ \ \Rightarrow\ \ support(J) < minsup \]
+\[ \forall I \subseteq J\ \colon\quad support(I) \geq support(J) \]
 }}}
+
+This means that if support of an itemset {{{$I$}}} is less than the minimum support threshold {{{$minsup$}}}, then for any itemset {{{$J$}}} that is a superset of {{{$I$}}}, the support can not be greater, and therefore {{{$J$}}} can not pass the support threshold:
+
+{{{
+\[ \forall I \subseteq J\ \colon\quad \Big(support(I) < minsup\Big)\ \ \implies\ \ \Big(support(J) < minsup\Big) \]
+}}}
+
+This gives us two equivalent statements which are known as an A-Priori Property${footnote:The second statement is the direct result of the first one based on the modus tollens rule of logic}$:
+
+{{{
+\begin{tcolorbox}
+  \textbf{A-Priori Property\colon}
+  \begin{enumerate}
+    \item if an itemset is not frequent, then no superset of this itemset can be frequent
+      \begin{equation}
+      \forall I \subseteq J\ \colon\quad I \notin \mathcal{F}\ \ \implies\ \ J \notin \mathcal{F}
+      \label{eq-APriori-APrioriProperty1}
+      \end{equation}
+    \item all subsets of a frequent itemset are frequent
+      \begin{equation}
+      \forall I \subseteq J\ \colon\quad J \in \mathcal{F}\ \ \implies\ \ I \in \mathcal{F}
+      \label{eq-APriori-APrioriProperty2}
+      \end{equation}
+  \end{enumerate}
+\end{tcolorbox}
+}}}
+
+Now we can significantly reduce the number of candidate itemsets.
 
 !!! A-Priori Algorithm
 
@@ -157,15 +185,15 @@ The whole algorithm is formally described with pseudocode as Function *@funAPrio
 {{{
 \begin{algorithm}[H]
  \KwData{Database of transactions $T$ and a support threshold $minsup$}
- \KwResult{A set $Freq$ of all frequent itemsets in $T$}
+ \KwResult{A set $\mathcal{F}$ of all frequent itemsets in $T$}
  \Fn{apriori($T$, $minsup$)}{
  	$L_1 \gets$ \{frequent 1-itemsets\}\\
  	\For{($k = 2;\ L_{k-1} \neq \varnothing;\ k++$)}{
- 		$C_k \gets$ generate\_candidates($L_{k-1}$)\\
+ 		$C_k \gets$ generateCandidates($L_{k-1}$)\\
 		$L_k \gets \{ I \in C_k | support(I) \geq minsup \}$
  	}
- 	$Freq \gets \bigcup_k L_k$ \\
-	\KwRet $Freq$
+ 	$\mathcal{F} \gets \bigcup_k L_k$ \\
+	\KwRet $\mathcal{F}$
  }
  \caption{A-Priori algorithm}
  \label{funAPriori}
@@ -201,11 +229,11 @@ You can see the pseudocode of the candidate generation procedure in Function *@f
 \begin{algorithm}
  \KwData{A set of frequent ($k-1$)-itemsets $L_{k-1}$}
  \KwResult{A set of candidate $k$-itemsets $C_k$}
- \Fn{generate\_candidates($L_{k-1}$)}{
+ \Fn{generateCandidates($L_{k-1}$)}{
  	$C_k \gets$ \{\}\\
  	\ForAll(\tcp*[f]{join step}){$I \in L_{k-1}$}{
  		\ForAll{$J \in L_{k-1}$}{
-			\If{can\_be\_joined($I$, $J$)}{
+			\If{canBeJoined($I$, $J$)}{
  				$C_k$.add(join($I$, $J$))
 			}
 		}
@@ -220,7 +248,7 @@ You can see the pseudocode of the candidate generation procedure in Function *@f
  	}
 	\KwRet $C_k$
  }
- \Fn{can\_be\_joined(I, J)}{
+ \Fn{canBeJoined(I, J)}{
  	\For{$p \gets 1$ \KwTo $k-2$}{
  		\If{$i_p$ != $j_p$}{
 			\KwRet false
@@ -316,7 +344,7 @@ The set of all frequent itemsets is the union of {{{$L_1$}}} and {{{$L_2$}}}:
 
 {{{
 \begin{align*}
-Freq = L_1 \cup L_2 = \{ &\{eggs\}, \{milk\}, \{butter\}, \{bacon\}, \{bread\},\\
+\mathcal{F} = L_1 \cup L_2 = \{ &\{eggs\}, \{milk\}, \{butter\}, \{bacon\}, \{bread\},\\
 						 &\{eggs, bacon\}, \{butter, bread\} \}
 \end{align*}
 }}}
@@ -334,7 +362,7 @@ Below, you can find the list of frequent itemsets together with their count and 
 
 !!! Extracting Association Rules from Frequent Itemsets
 
-Once we have found the set of frequent itemsets {{{$Freq$}}}, we can represent each itemset {{{$Q \in Freq$}}} as a rule in form {{{$I \Rightarrow J$}}} where itemset {{{$I$}}} is a subset of {{{$Q$}}} such that {{{$I \neq \varnothing$}}} and {{{$I \neq Q$}}} and itemset {{{$J$}}} is a complement {{{$Q \setminus I$}}}.
+Once we have found the set of frequent itemsets {{{$\mathcal{F}$}}}, we can represent each itemset {{{$Q \in \mathcal{F}$}}} as a rule in form {{{$I \Rightarrow J$}}} where itemset {{{$I$}}} is a subset of {{{$Q$}}} such that {{{$I \neq \varnothing$}}} and {{{$I \neq Q$}}} and itemset {{{$J$}}} is a complement {{{$Q \setminus I$}}}.
 
 For example, itemset {{{$\{ bread, butter, milk \}$}}} produces 6 association rules:
 
@@ -670,6 +698,7 @@ asItemset
 @sec:APriori-PracticalExamples
 
 !!! Appendix: Proving the A-Priori Property
+@sec:APriori-ProvingAPrioriProperty
 
 You are given two itemsets
 
