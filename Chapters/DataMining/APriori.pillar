@@ -8,11 +8,6 @@ By finding frequent sets of items, we can also produce association rules between
 
 In this chapter, we discuss ''A-Priori'' - a fast and efficient algorithm for mining frequent itemsets and finding association rules.
 
-!!! Applications
-@sec:APriori-Applications
-
-The applications of A-Priori go far beyond market basket analysis.
-
 !!! The Problem of Mining Frequent Itemsets
 @sec:APriori-ProblemStatement
 
@@ -370,6 +365,7 @@ Below, you can find the list of frequent itemsets together with their count and 
 | {butter, bread} | 2 | 1/3
 
 !!! Extracting Association Rules from Frequent Itemsets
+@sec:APriori-AssociationRules
 
 Once we have found the set of frequent itemsets {{{$\mathcal{F}$}}}, we can represent each itemset {{{$Q \in \mathcal{F}$}}} as a rule in form {{{$I \Rightarrow J$}}} where itemset {{{$I$}}} is a subset of {{{$Q$}}} such that {{{$I \neq \varnothing$}}} and {{{$I \neq Q$}}} and itemset {{{$J$}}} is a complement {{{$Q \setminus I$}}}.
 
@@ -504,207 +500,364 @@ We implement both itemset and association rules as classes.
 \end{sidewaysfigure}
 }}}
 
-!!!! Itemset class
+!!!! Implementation of Metrics
 
-By definition, itemset is just a set of items. However, the A-Priori algorithm assumes that elements of each itemset are sorted and on multiple occations accesses last (greatest)items from the itemset. This means that the ==Itemset== class can not be implemented on to of a ==Set==. It must be an ordered collection and we find ==Array== to be the best and most efficient class to represent itemsets (we will make sure that there are no duplicates when an itemset is created). We also want each itemset to remember its support and confidence. This way, when the A-Priori algorithm finds the collection of frequent itemsets, each itemset will be able to tell you how many times it appeared in the database of transactions and what is its support:
+In Sections *@sec:APriori-ProblemStatement* and *@sec:APriori-AssociationRules*, we have presented multiple metrics that can be used for evaluating the importance of itemsets and association rules. Those metrics can be used for sorting and filtering the results of the A-Priori algorithm.
+
+In this book, we focus only on 4 metrics: count, support, confidence, and lift. However, there are multiple other metrics that can be used for association rules mining. We implement each metric as a subclass of an abstract class ==APrioriMetric== with two abstract methods: ==valueForItemset:== and ==valueForAssociationRule:==. This allows the users of our implementation to add any number of custom metrics by creating new subclasses of the ==APrioriMetric== and providing implementations for the two abstract methods.
+
+In Figure *@figAPrioriMetricsUML*, you can see the UML diagram describing the implementation of different metrics.
+
++Different metrics for itemsets and association rules>figures/APrioriMetricsUML|label=figAPrioriMetricsUML+
+
+Some metrics, such as support or lift, need to know the total number of transactions in the database. We store this number in the instance variable ==numberOfTransactions== of every metric. For metrics that do not need this number for their calculation, such as count or confidence, the instance variable does not have to be initialized.
+
+For example:
 
 [[[
-Array subclass: #Itemset
-	instanceVariableNames: 'count support'
-	classVariableNames: ''
-	package: 'APriori'
+"Confidence metric does not need to know the number of transactions"
+confidence := APrioriConfidenceMetric new.
+confidence valueForAssociationRule: rule.
+
+"Lift metric uses the number of transactions, so we have to provide this number before calculating lift"
+lift := APrioriLiftMetric new.
+lift numberOfTransactions: transactions size.
+lift valueForAssociationRule: rule.
 ]]]
 
-!!!!! Instance Creation
+!!!!! Count
 
-When the itemset is created, we need to mak sure that it has no duplicates and that the elements are sorted (it is an array that represents an ordered set):
+You will see in the following sections that our implementation of A-Priori is completely based on a single metric - count of itemsets in the database of transactions. Count is calculated during the frequent itemset selection and stored inside the itemset. Later, after the A-Priori algorithm has found frequent itemsets and association rules, we can ask ==APriori== class to calculate other metrics. All other metrics can be calculated based on the count.
+
+Nevertheless, we want to keep count consistent with other metrics. So we implement it as a separate class and when it is asked for the count of an itemset, it simply delegates that request to the itemset:
 
 [[[
-Itemset class >> withAll: aCollection
-	| collectionWithoutDuplicates itemset |
-	collectionWithoutDuplicates := aCollection asSet asArray.
-	itemset := super withAll: collectionWithoutDuplicates.
-	itemset sort.
-	^ itemset.
+APrioriCountMetric >> valueForItemset: anItemset
+	^ anItemset count
 ]]]
 
-We extend the ==Collection== class with method ==asItemset== that allows us to quickly create itemsets by converting any kind of collection to ==Itemset== class:
+Count of an association rule is the count of its parent itemset (the itemset from which this association rule was generated, the union of key and value of the association rule). In the next section, where we discuss the implementation of ==APrioriAssociationRule==, you will see that every association rule holds a reference to its parent itemset. So when an ==APrioriCountMetric== is asked what is the count of an association rule, it simply ask the rule for its parent itemset and returns the count of that itemset:
 
 [[[
-Collection >> asItemset
-	^ Itemset withAll: self
+APrioriCountMetric >> valueForAssociationRule: anAssociationRule
+	^ self valueForItemset: anAssociationRule parentItemset
 ]]]
 
-!!!!! Printing
+!!!!! Support
 
-We want to print an itemset as a set using the notation that is used in most literature: elements separated by commas and enclosed in curly braces: {{{$\{1, 2, 3\}$}}}
+As we mentioned before, support metric depends on the total number of transactions. After you provide this number, the metric can calculate its value for an itemset by dividing the count of that itemset by the total number of transactions:
 
 [[[
-Itemset >> printOn: aStream
-	aStream
-		nextPut: ${;
-		nextPutAll: (', ' join: self);
-		nextPut: $}.
+APrioriSupportMetric >> valueForItemset: anItemset
+	^ anItemset count / numberOfTransactions
 ]]]
 
-!!!!! Equality
-
-The standard equality operation that ==Itemset== inherits from ==SequenceableCollection== (superclass of ==Array==) checks only if the elements of two given itemsets are equal. But we also want to check if count and support of those itemsets is the same. So we override the equality operation in the following way:
+In a same way as count of the association rule is the count of it's parent itemset, support of a rule is the support of its parent:
 
 [[[
-Itemset >> = anObject
-	(super = anObject)
-		ifFalse: [ ^ false ].
-		
-	(self count = anObject count)
-		ifFalse: [ ^ false ].
+APrioriSupportMetric >> valueForAssociationRule: anAssociationRule
+	^ self valueForItemset: anAssociationRule parentItemset
+]]]
+
+!!!!! Confidence
+
+The confidence metric is only defined for association rules. So the ==valueForItemset:== method should not be implemented:
+
+[[[
+APrioriConfidenceMetric >> valueForItemset: anItemset
+	self shouldNotImplement
+]]]
+
+As we have discussed in Section *@sec:APriori-AssociationRules*, the confidence of an association rule is the count of its parent itemset divided by the count of its key itemset:
+
+[[[
+APrioriConfidenceMetric >> valueForAssociationRule: anAssociationRule
+	| parentCount keyCount |
 	
-	(self support = anObject support)
-		ifFalse: [ ^ false ].
-		
-	^ true
-]]]
-
-!!!!! Converting to Array
-
-Sometimes we will only need to compare elements of two itemsets, regardless of their count and support. We can do that by converting itemsets to arrays and then comparing them:
-
-[[[
-Itemset >> asArray 
-	^ Array withAll: self
-]]]
-
-!!!!! Subsets and Supersets
-
-An itemset should be able to tell us if it is a superset of another itemset. This will be useful when we count the occurences of a given itemset in a database of transactions (remember that transactions are itemsets). We will iterate through each transaction and check if it is a superset of a given itemset. So we implement a method that checks if all elements of a given itemset are included into the receiver itemset:
-
-[[[
-Itemset >> isSupersetOf: anotherItemset
-	^ self includesAll: anotherItemset
-]]]
-
-When generating association rules from itemsets, we will need to extract all subsets of a given itemset {{{$I$}}}, without an empty set {{{$\varnothing$}}} and the itemset {{{$I$}}} itself. For example, itemset {{{$\{ 1, 2, 3 \}$}}} has 6 such subsets: {{{$\{1\}$}}}, {{{$\{2\}$}}}, {{{$\{3\}$}}}, {{{$\{1, 2\}$}}}, {{{$\{1, 3\}$}}}, and {{{$\{2, 3\}$}}}. We can find them by generating all possible combinations of elements fom itemset {{{$I$}}} and removing the combination that contains all items ({{{$I$}}} itself):
-
-[[[
-Itemset >> allSubsets
-	^ (self combinations copyWithout: (self asArray)) collect: #asItemset
-]]]
-
-Finally, on the prune step of A-Priori algorithm, we have to check if all {{{$(k-1)$}}}-subsets of a given candidate {{{$k$}}}-itemset are frequent. To do that, we first need to generate all subsets of a given itemset {{{$I$}}} whose size is one element less than the size of an {{{$I$}}}. We call them largest subsets. For example, largest subsets of itemset {{{$\{ 1, 2, 3 \}$}}} are {{{$\{1, 2\}$}}}, {{{$\{1, 3\}$}}}, and {{{$\{2, 3\}$}}}. We can find them by iteratively removing one element from {{{$I$}}}:
-
-[[[
-Itemset >> allLargestSubsets
-	^ self collect: [ :item |
-		self copyWithout: item ].
-]]]
-
-!!!!! Joining Itemsets
-
-As we have discussed in Section *@sec:APriori-Definition*, the join step of A-Priori algorithm joins every two itemsets that satisfy the following condition: {{{$k$}}}-itemset {{{$I$}}} can be joined with {{{$k$}}}-itemset {{{$J$}}} if they share the first {{{$k-1$}}} elements and the last element of {{{$J$}}} is less than the last element of {{{$I$}}}. To perform this check faster, we don't check if itemsets have same size, because we know that this method will be called by the method ==APriori >> joinFrequentItemsetsOfSize: k== which only iterates over itemsets of size {{{$k$}}}. Notice also that we convert both itemsets to arrays because we only want to compare their elements and not their counts and supports:
-
-[[[
-Itemset >> canBeJoinedWith: anotherItemset
-	| itemset1WithoutLast itemset2WithoutLast |
+	parentCount := anAssociationRule parentItemset count.
+	keyCount := anAssociationRule keyItemset count.
 	
-	itemset1WithoutLast := self asArray copyFrom: 1 to: self size - 1.
-	itemset2WithoutLast := anotherItemset asArray copyFrom: 1 to: anotherItemset size - 1.
+	^ parentCount / keyCount
+]]]
+
+!!!!! Lift
+
+Lift is also not defined for itemsets, so ==valueForItemset:== should not be implemented:
+
+[[[
+APrioriLiftMetric >> valueForItemset: anItemset
+	self shouldNotImplement
+]]]
+
+For association rule, the lift is the measure of correlation between its key and value defined as follows (see Section *@sec:APriori-AssociationRules* for more information):
+
+[[[
+APrioriLiftMetric >> valueForAssociationRule: anAssociationRule
+	| parentCount keyCount valueCount |
 	
-	^ (itemset1WithoutLast = itemset2WithoutLast) and: (self last < anotherItemset last).
-]]]
-
-If {{{$k$}}}-itemsets {{{$I$}}} and {{{$J$}}} can be joined, we join them into a new {{{$(k+1)$}}}-itemset which contains the first {{{$k-1$}}} elements which are the same in {{{$I$}}} and {{{$J$}}}, followed by the last element of {{{$I$}}} and then the last element of {{{$J$}}}:
-
-[[[
-Itemset >> joinWith: anotherItemset
-	| itemsetWithoutLast |
+	parentCount := anAssociationRule parentItemset count.
+	keyCount := anAssociationRule keyItemset count.
+	valueCount := anAssociationRule valueItemset count.
 	
-	itemsetWithoutLast := self copyFrom: 1 to: self size - 1.
-	
-	^ (OrderedCollection
-		withAll: itemsetWithoutLast)
-		add: self last;
-		add: anotherItemset last;
-		asItemset.
+	^ parentCount * numberOfTransactions / (keyCount * valueCount)
 ]]]
 
-!!!! AssociationRule class
+!!!! Implementation of Itemset and Association Rule
 
-We implement ==AssociationRule== as a subclass of an ==Association==. Similar to an itemset, an association rule knows its count, support, confidence, and lift.
++Itemse and association rule>figures/APrioriItemsetRuleUML|width=70|label=figAPrioriItemsetRuleUML+
+
+!!!!! Itemset
 
 [[[
-Association subclass: #AssociationRule
-	instanceVariableNames: 'count support confidence lift'
-	classVariableNames: ''
-	package: 'APriori'
+APrioriItemset >> initialize
+	super initialize.
+	metricsValues := Dictionary new.
 ]]]
 
-!!!!! Instance Creation
-
-To create association rules, we extend ==Association== class with a method ==asAssociationRule== that converts a given association to an association rule:
-
 [[[
-Association >> asAssociationRule
-	^ AssociationRule key: self key value: self value
+APrioriItemset >> count: aNumber
+	metricsValues at: APrioriCountMetric put: aNumber
 ]]]
 
-We also add an operator ===>== to the ==Itemset== class that allows us to create association rules simply by combining two itemsets. For example, we can create an itemset {{{$\{a, b, c\} \Rightarrow \{d, e\}$}}} with a simple expression ==#(a b c) asItemset => #(d e) asItemset==.
+[[[
+APrioriItemset >> count 
+	^ metricsValues at: APrioriCountMetric
+]]]
 
 [[[
-Itemset >> => anotherItemset
+APrioriItemset >> support 
+	^ metricsValues at: APrioriSupportMetric
+]]]
+
+[[[
+APrioriItemset >> => anotherItemset
 	^ (self -> anotherItemset) asAssociationRule
 ]]]
 
-We also add a method to the ==Itemset== class that will allow us to generate all possible association rules from the given itemset. For example, itemset {{{$\{1, 2, 3\}$}}} produces six association rules:
-
-{{{
-\[ \{ 1 \} \Rightarrow \{ 2, 3 \}  \]
-\[ \{ 2 \} \Rightarrow \{ 1, 3 \}  \]
-\[ \{ 3 \} \Rightarrow \{ 1, 2 \}  \]
-\[ \{ 1, 2 \} \Rightarrow \{ 3 \}  \]
-\[ \{ 1, 3 \} \Rightarrow \{ 2 \}  \]
-\[ \{ 2, 3 \} \Rightarrow \{ 1 \}  \]
-}}}
-
 [[[
-Itemset >> allAssociationRules
-	^ self allSubsets collect: [ :eachSubset |
-		eachSubset => (self difference: eachSubset) ].
-]]]
-
-!!!!! Printing
-
-The following method will print association rules in the form =={1, 2} => {3, 4}==:
-
-[[[
-printOn: aStream
-	self key printOn: aStream.
-	aStream nextPutAll: ' => '.
-	self value printOn: aStream.
-]]]
-
-!!!!! Equality
-
-For the same reason that made us override the equality operator of Itemset, we override it for the ==AsociationRule==: the implementation of equality check that it inherits from ==Association== only checks the equality of its key and value itemsets, but we also want to check the equality of count, support, confidence, and lift of the given two itemsets. Notice that the first line will check the equality of objects of ==Association==, it will check the equality of keys and values (both itemsets), thus calling the equality method from ==Itemset== class. And this means that count and support of both key and value itemsets will also be compared.
-
-[[[
-= anObject
-	(super = anObject)
+APrioriItemset >> =!= anObject
+	(self = anObject)
 		ifFalse: [ ^ false ].
 		
-	^ { self count . self support . self confidence . self lift } = { anObject count . anObject support . anObject confidence . anObject lift }
+	^ self metricsValues = anObject metrics.
 ]]]
 
-!!!!! Converting to Itemset
-
-Association rule can be turned into an itemset by uniting its key and value itemsets. For example, the rule {{{$\{a, b, c\} \Rightarrow \{ d, e \}$}}} can be converted to an itemset {{{$\{ a, b, c, d, e \}$}}}:
+!!!!! Association Rule
 
 [[[
-asItemset	
-	^ self key union: self value
+APrioriAssociationRule >> initialize 
+	super initialize.
+	metricsValues := Dictionary new.
 ]]]
 
-!!! Practical Examples
-@sec:APriori-PracticalExamples
+[[[
+APrioriAssociationRule >> count
+	^ metricsValues at: APrioriCountMetric
+]]]
+
+[[[
+APrioriAssociationRule >> support
+	^ metricsValues at: APrioriSupportMetric
+]]]
+
+[[[
+APrioriAssociationRule >> confidence
+	^ metricsValues at: APrioriConfidenceMetric
+]]]
+
+[[[
+APrioriAssociationRule >> lift
+	^ metricsValues at: APrioriLiftMetric
+]]]
+
+[[[
+APrioriAssociationRule >> =!= anObject
+	(self species = anObject species)
+		ifFalse: [ ^ false ].
+		
+	(self key =!= anObject key)
+		ifFalse: [ ^ false ].
+		
+	(self value =!= anObject value)
+		ifFalse: [ ^ false ].
+		
+	^ self metricsValues = anObject metrics.
+]]]
+
+!!!! Implementation of Transactions
+
++The flow of A-Priori algorithm>figures/APrioriTransactionsUML|width=60|label=figAPrioriTransactionsUML+
+
+[[[
+APrioriTransactions >> itembase
+	^ self uniqueItems 
+]]]
+
+[[[
+APrioriTransactionsArray >> do: aBlock 
+	array do: aBlock
+]]]
+
+[[[
+APrioriTransactionsArray >> size 
+	^ array size
+]]]
+
+[[[
+APrioriTransactionsArray >> uniqueItems
+	^ (array flatCollect: #yourself) asSet
+]]]
+
+!!!! Implementation of A-Priori
+
++The flow of A-Priori algorithm>figures/APrioriCoreUML|label=figAPrioriCoreUML+
+
+!!!!! Itemset Counter
+
+[[[
+APrioriItemsetCounter >> countOfItemset: anItemset
+	| count |
+	count := 0.
+	
+	transactions do: [ :transaction |
+		(anItemset isSubsetOf: transaction)
+			ifTrue: [ count := count + 1 ] ].
+		
+	^ count
+]]]
+
+!!!!! FrequentItemsetSelector
+
+[[[
+APrioriFrequentItemsetSelector >> selectFrequentItemsets: aCollectionOfCandidates
+
+	^ aCollectionOfCandidates select: [ :itemset |
+		itemset count: (itemsetCounter countOfItemset: itemset).
+		itemset count >= minCount ]
+]]]
+
+!!!!! Candidate Generator
+
+[[[
+APrioriCandidateGenerator >> generateCandidatesFrom: previousFrequentItemsets
+	| candidateItemsets |
+	candidateItemsets := self joinItemsets: previousFrequentItemsets.
+	candidateItemsets := self pruneItemsets: candidateItemsets basedOn: previousFrequentItemsets.
+	^ candidateItemsets 
+]]]
+
+[[[
+APrioriCandidateGenerator >> joinItemsets: itemsets
+	^ itemsets flatCollect: [ :itemset1 |
+		itemsets
+			select: [ :itemset2 | self canItemset: itemset1 beJoinedWith: itemset2 ]
+			thenCollect: [ :itemset2 | self joinItemset: itemset1 with: itemset2 ] ].
+]]]
+
+[[[
+APrioriCandidateGenerator >> pruneItemsets: itemsets basedOn: previousFrequentItemsets
+	^ itemsets select: [ :itemset |
+		itemset allLargestSubsets allSatisfy: [ :subset |
+			previousFrequentItemsets includes: subset ] ].
+]]]
+
+[[[
+APrioriCandidateGenerator >> canItemset: firstItemset beJoinedWith: secondItemset
+	| itemset1WithoutLast itemset2WithoutLast |
+	
+	itemset1WithoutLast := firstItemset copyFrom: 1 to: firstItemset size - 1.
+	itemset2WithoutLast := secondItemset copyFrom: 1 to: secondItemset size - 1.
+	
+	^ (itemset1WithoutLast = itemset2WithoutLast) and: (firstItemset last < secondItemset last).
+]]]
+
+[[[
+APrioriCandidateGenerator >> joinItemset: firstItemset with: secondItemset
+	| newItemset |
+	newItemset := firstItemset copy.
+	newItemset add: secondItemset last.
+	^ newItemset
+]]]
+
+!!!!! A-Priori
+
+[[[
+APriori >> initializeTransactions: transactions
+	candidateGenerator := APrioriCandidateGenerator new.
+	frequentItemsetSelector := APrioriFrequentItemsetsSelector forTransactions: transactions.
+	
+	itembase := transactions itembase. 
+	numberOfTransactions := transactions size.
+	
+	frequentItemsets := OrderedCollection new.
+]]]
+
+[[[
+APriori >> findFrequentItemsets 
+	| frequentKItemsets candidates |
+	
+	candidates := itembase collect: [ :item | { item } asItemset ].
+	frequentKItemsets := frequentItemsetSelector selectFrequentItemsets: candidates.
+	
+	[ frequentKItemsets isEmpty ] whileFalse: [
+		frequentItemsets addAll: frequentKItemsets.
+		candidates := candidateGenerator generateCandidatesFrom: frequentKItemsets.
+		frequentKItemsets := frequentItemsetSelector selectFrequentItemsets: candidates ].
+]]]
+
+[[[
+APriori >> buildAssociationRules
+	associationRules := frequentItemsets flatCollect: [ :itemset |
+		self allAssociationRulesFromItemset: itemset ].
+]]]
+
+[[[
+APriori >> allAssociationRulesFromItemset: anItemset	
+	| keys values |
+	
+	keys := anItemset allSubsets.
+	values := keys collect: [ :key | anItemset difference: key ].
+	
+	"We need to get counts of those itemsets"
+	keys := keys collect: [ :itemset |
+		frequentItemsets detect: [ :itemsetWithCount |
+			itemset = itemsetWithCount ] ].
+	
+	values := values collect: [ :itemset |
+		frequentItemsets detect: [ :itemsetWithCount |
+			itemset = itemsetWithCount ] ].
+	
+	^ keys with: values collect: [ :key :value |
+		(key => value)
+			parentItemset: anItemset;
+			yourself ]
+]]]
+
+[[[
+APriori >> calculateItemsetMetrics: aCollectionOfMetricsClasses
+	itemsetMetrics := self instantiateMetrics: aCollectionOfMetricsClasses.
+
+	frequentItemsets do: [ :itemset |
+		itemsetMetrics do: [ :metric |
+			itemset metrics at: metric class put: (metric valueForItemset: itemset) ] ]
+]]]
+
+[[[
+APriori >> calculateAssociationRuleMetrics: aCollectionOfMetricsClasses
+	associationRuleMetrics := self instantiateMetrics: aCollectionOfMetricsClasses.
+
+	associationRules do: [ :rule |
+		associationRuleMetrics do: [ :metric |
+			rule metrics at: metric class put: (metric valueForAssociationRule: rule) ] ]
+]]]
+
+[[[
+APriori >> instantiateMetrics: aCollectionOfMetricsClasses
+	| metrics |
+	metrics := aCollectionOfMetricsClasses collect: [ :aClass | aClass new ].
+	metrics do: [ :metric | metric numberOfTransactions: numberOfTransactions ].
+	^ metrics
+]]]
 
 !!! Appendix: Proving the A-Priori Property
 @sec:APriori-ProvingAPrioriProperty
