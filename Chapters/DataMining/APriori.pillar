@@ -423,6 +423,7 @@ If occurences of {{{$I$}}} and {{{$J$}}} are independent, then {{{$P(I \cup J) =
 We invite you to prove that those two definitions of lift are equivalent.
 
 !!! Example Part 3: Mining Association Rules
+@sec:APriori-ExampleAssociationRules
 
 In this example, we will use frequent itemsets found in Section *@sec:APriori-SimpleExample* to produce association rules for the two values of minimum confidence threshold: {{{$minconf = 2/3$}}} and {{{$minconf = 1$}}}.
 
@@ -604,7 +605,40 @@ APrioriLiftMetric >> valueForAssociationRule: anAssociationRule
 
 !!!! Implementation of Itemset and Association Rule
 
+Every part of the A-Priori algorithm operates on itemsets or association rules. In our implementation, they store items and the values of different metrics. You can see how they are UML diagram for ==APrioriItemset== and ==APrioriAssociationRule== in Figure *figAPrioriItemsetRuleUML*.
+
 +Itemse and association rule>figures/APrioriItemsetRuleUML|width=70|label=figAPrioriItemsetRuleUML+
+
+The values of metrics are stores in the dictionary whose keys are the metrics classes. This way, ==APrioriItemset== and ==APrioriAssociationRule== can be easily extended to support other metrics. Here is an example of a ==metricsValues== dictionary of an association rule {{{$\{bread\} \Rightarrow \{butter\}$}}} taken from the example in Section *@sec:APriori-ExampleAssociationRules* together with a value of one custom metric:
+
+|! Key |! Value
+| APrioriCountMetric | 2
+| APrioriSupportMetric | 1/3
+| APrioriConfidenceMetric | 2/3
+| APrioriLiftMetric | 4/3
+| APrioriMyCustomMetric | 7/8
+
+To make the API more user-friendly, we add accessors for count, support, confidence, and lift. This is just a syntactic sugar which allows you to write more readable queries. For example:
+
+[[[
+associationRules select: [ :rule | rule confidence > 0.5 ].
+]]]
+
+It is the same as writing:
+
+[[[
+associationRules select: [ :rule |
+	(rule metricsValues at: APrioriConfidenceMetric) > 0.5 ].
+]]]
+
+You can access the value of your custom metrics using the ==metricsValues== dictionary or you can extend the ==APrioriItemset== and ==APrioriAssociationRule== with an accessor for your custom metric:
+
+[[[
+associationRules select: [ :rule |
+	(rule metricsValues at: APrioriMyCustomMetric) > 0.3 ].
+
+associationRules select: [ :rule | rule myCustomMetric > 0.3 ].
+]]]
 
 !!!!! Itemset
 
