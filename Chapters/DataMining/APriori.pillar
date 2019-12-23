@@ -134,7 +134,7 @@ Support of an itemset is its count divided by the number of transactions. Theref
 \[ \forall I \subseteq J\ \colon\quad support(I) \geq support(J) \]
 }}}
 
-This means that if support of an itemset {{{$I$}}} is less than the minimum support threshold {{{$minsup$}}}, then for any itemset {{{$J$}}} that is a superset of {{{$I$}}}, the support can not be greater, and therefore {{{$J$}}} can not pass the support threshold:
+This means that if support of an itemset {{{$I$}}} is less than the minimum support threshold {{{$minsup$}}}, then for any itemset {{{$J$}}} that is a superset of {{{$I$}}}, the support is also less than {{{$minsup$}}}:
 
 {{{
 \[ \forall I \subseteq J\ \colon\quad \Big(support(I) < minsup\Big)\ \ \implies\ \ \Big(support(J) < minsup\Big) \]
@@ -160,25 +160,36 @@ This gives us two equivalent statements which are known as an A-Priori Property$
 \end{tcolorbox}
 }}}
 
-Now we can significantly reduce the number of candidate itemsets.
+This property allows us to significantly reduce the search space for frequent itemsets. Turns out that we do not have to calculate the support of every possible combination of items. We can start with the smallest itemsets of size 1, select the frequent ones and consider only those itemsets of size 2 that don't have any non-frequent subsets of size 1. Then we repeat the same procedure for itemsets of size 3, 4, and so on. This is known as the A-Priori algorithm.
 
 !!! A-Priori Algorithm
+@sec:APriori-APrioriAlgorithm
 
-We start the A-Priori algorithm by what is often called an ''"initialization step"'' - we build a set {{{$L_1$}}} of all frequent itemsets of size 1. We think of every item {{{$i$}}} from the item base {{{$B$}}} as an itemset with 1 element {{{$I = \{ i \}$}}}. Then we select only those itemsets whose support is greater than or equal to the given minimum support threshold {{{$minsup$}}}.
+The A-Priori property discussed in the previous section provides us with an efficient way of finding all frequent itemsets in the database of traansactions.
 
-Then we repeat the following two steps with {{{$k = 2, 3, \dots$}}} as long as the set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets is not empty:
+We start by building a set {{{$L_1$}}} of all frequent itemsets of size 1. To do that, we iterate over all items from the itembase {{{$B$}}} and collect each item {{{$i$}}} as an itemset with one element {{{$I = \{ i \}$}}} into the set of frequent itemsets {{{$L_1$}}}. Then we select only those itemsets whose support is greater than or equal to the given minimum support threshold {{{$minsup$}}}.
 
-# ''Candidate generation'': we use the set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets to generate {{{$C_k$}}} - a set candidate {{{$k$}}}-itemsets.
+We repeat the following two steps with {{{$k = 2, 3, \dots$}}} as long as the set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets is not empty:
+
+# ''Candidate generation'': we use the set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets to generate {{{$C_k$}}} - a set of candidate {{{$k$}}}-itemsets. Those are the itemsets that can potentially be frequent. Every itemset inside {{{$C_k$}}} will satisfy the A-Priori property: all its subsets of size {{{$k-1$}}} will be frequent (will be included in {{{$L_{k-1}$}}}).
 # ''Frequent itemset selection'': we construct the set {{{$L_k$}}} of frequent {{{$k$}}}-itemsets by selecting only those candidates from {{{$C_k$}}} that pass the minimum support threshold.
 
-To get a better intuition on the flow of the A-Priori algorithm, take a look on Figure *@figAPriori*. We start with a set of frequent items {{{$L_1$}}}, use it to generate candidates {{{$C_2$}}}, then select frequent pairs {{{$L_2$}}}, and continue this process until we get an empty set {{{$L_k = \varnothing$}}}.
+To get a better intuition on the flow of the A-Priori algorithm, take a look on Figure *@figAPriori*. We start with a set of frequent itemsets {{{$L_1$}}}, use it to generate candidates {{{$C_2$}}}, then select frequent itemsets {{{$L_2$}}}, and continue this process until we get an empty set {{{$L_k = \varnothing$}}}.
 
-+The flow of A-Priori algorithm>figures/APriori.png|label=figAPriori+
-
-The whole algorithm is formally described with pseudocode as Function *@funAPriori*. The function ==generate_candidates== will be defined in the next section, where we will talk about the process of candidate generation.
 
 {{{
-\begin{algorithm}[H]
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{Chapters/DataMining/figures/APriori}
+\caption{A-Priori algorithm\colon We start with a set of frequent 1-itemsets $L_1$, then use it to generate candidates $C_2$, then select frequent 2-itemsets into a set $L_2$. We continue generating candidates $C_k$ from frequent itemsets $L_{k-1}$ and selecting candidates from $C_k$ that pass a support threshold into $L_k$. We stop this process when we get an empty set.}
+\label{figAPriori}
+\end{figure}
+}}}
+
+The whole algorithm is formally described as Pseudocode *@funAPriori*. The function ==generateCandidates== will be defined in the next section, where we will talk about the process of candidate generation.
+
+{{{
+\begin{algorithm}
  \KwData{Database of transactions $T$ and a support threshold $minsup$}
  \KwResult{A set $\mathcal{F}$ of all frequent itemsets in $T$}
  \Fn{apriori($T$, $minsup$)}{
@@ -193,43 +204,7 @@ The whole algorithm is formally described with pseudocode as Function *@funAPrio
  \caption{A-Priori algorithm}
  \label{funAPriori}
 \end{algorithm}
-}}}
 
-!!!! Candidate Generation for the A-Priori Algorithm
-@sec:APriori-CandidateGeneration
-
-In this section, we will take a closer look at the candidate generation for the A-Priori algorithm. At every iteration, it uses previously generated set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets to generate a set {{{$C_k$}}} containing candidate itemsets of size {{{$k$}}}. This is done in two steps:
-
-% I write it in LaTeX because I need to insert equations into the list environment without breaking it into multiple lists
-{{{
-\begin{enumerate}
-\item \textbf{Join step} - we join the set $L_{k-1}$ with itself (this operation is denoted as $L_{k-1} \bowtie L_{k-1}$) according to the rules
-\begin{itemize}
-\item Every two itemsets $I = \{ i_1, i_2, \dots, i_{k-1} \}$ and $J = \{ j_1, j_2, \dots, j_{k-1} \}$ selected from $L_{k-1}$ can be joined if their first $k-2$ elements are the same and the last element of $I$ is smaller than the last element of $J$ (this ensures that the resulted itemset will be sorted and there will be no duplicate candidates)
-
-\[ (i_1 = j_1) \land (i_2 = j_2) \land \dots \land (i_{k-2} = j_{k-2}) \land (i_{k-1} < j_{k-1}) \]
-
-\item If two itemsets $I$ and $J$ can be joined, we join them into a $k$-itemset $Q$ by taking the first $k-2$ elements that they have in common, and appending to them the last element of $I$ followed by the last element of $J$
-
-\[ Q = \{ i_1, i_2, \dots, i_{k-2}, i_{k-1}, j_{k-1} \} \]
-\end{itemize}
-
-\item \textbf{Prune step} - we remove all candidates that have at least one subset of size $k-1$ that is not in $L_{k-1}$.
-\end{enumerate}
-}}}
-
-{{{
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth,keepaspectratio]{Chapters/DataMining/figures/CandidateGeneration.pdf}
-\caption{Example of generating a set of candidate itemsets of size 4 ($C_4$) from a set of frequent itemsets of size 3 ($L_3$). At \textbf{join step}, we find every pair of itemsets from $L_3$ that can be joined (both itemsets must share the first 2 elements and the last element of the first itemset in the pair must be smaller than the last element of the second itemset). We join itemsets in each pair by writing down their first 2 common elements, then the last element of the first itemset, and then the last element of the second itemset. As an output of a join step, we get a set $L_3 \bowtie L_3$ containing 4 itemsets of size 4 that could potentially be frequent. At \textbf{prune step}, we select only those itemsets from $L_3 \bowtie L_3$ that satisfy the A-Priori property described by Equation~\ref{eq-APriori-APrioriProperty2}\colon\xspace every subset of a frequent itemset must be frequent. We only need to check if all subsets of size 3 belong to $L_3$. Because we already know that all subsets of every itemset from $L_3$ belong to $L_2$ or $L_1$. You can see that itemset $\{ a, b, c, d \}$ has a non-frequent subset $\{ a, c, d \}$ and itemset $\{ a, b, c, e \}$ has a non-frequent subset $\{ a, c, e \}$. THis means that only two itemsets can be selected as candidates\colon\xspace $C_4 = \{ \{ a, b, d, e \}, \{ b, c, d, e \} \}$.}
-\label{figAPrioriCandidateGeneration}
-\end{figure}
-}}}
-
-You can see the pseudocode of the candidate generation procedure in Function *@funCandidateGeneration*.
-
-{{{
 \begin{algorithm}
  \KwData{A set of frequent ($k-1$)-itemsets $L_{k-1}$}
  \KwResult{A set of candidate $k$-itemsets $C_k$}
@@ -271,6 +246,40 @@ You can see the pseudocode of the candidate generation procedure in Function *@f
  \caption{Candidate generation for the A-Priori algorithm}
  \label{funCandidateGeneration}
 \end{algorithm}
+}}}
+
+!!!! Candidate Generation for the A-Priori Algorithm
+@sec:APriori-CandidateGeneration
+
+In this section, we will take a closer look at the candidate generation for the A-Priori algorithm. At every iteration, it uses previously generated set {{{$L_{k-1}$}}} of frequent {{{$(k-1)$}}}-itemsets to generate a set {{{$C_k$}}} containing candidate itemsets of size {{{$k$}}}. This is done in two steps:
+
+% I write it in LaTeX because I need to insert equations into the list environment without breaking it into multiple lists
+{{{
+\begin{enumerate}
+\item \textbf{Join step} - we join the set $L_{k-1}$ with itself (this operation is denoted as $L_{k-1} \bowtie L_{k-1}$) according to the rules
+\begin{itemize}
+\item Every two itemsets $I = \{ i_1, i_2, \dots, i_{k-1} \}$ and $J = \{ j_1, j_2, \dots, j_{k-1} \}$ selected from $L_{k-1}$ can be joined if their first $k-2$ elements are the same and the last element of $I$ is smaller than the last element of $J$ (this ensures that the resulted itemset will be sorted and there will be no duplicate candidates)
+
+\[ (i_1 = j_1) \land (i_2 = j_2) \land \dots \land (i_{k-2} = j_{k-2}) \land (i_{k-1} < j_{k-1}) \]
+
+\item If two itemsets $I$ and $J$ can be joined, we join them into a $k$-itemset $Q$ by taking the first $k-2$ elements that they have in common, and appending to them the last element of $I$ followed by the last element of $J$
+
+\[ Q = \{ i_1, i_2, \dots, i_{k-2}, i_{k-1}, j_{k-1} \} \]
+\end{itemize}
+
+\item \textbf{Prune step} - we remove all candidates that have at least one subset of size $k-1$ that is not in $L_{k-1}$.
+\end{enumerate}
+}}}
+
+This procedure is formally defined in Pseudocode *@funCandidateGeneration*. We also provide an ilustrative example of A-Priori candidate generation in Figure *@figAPrioriCandidateGeneration*.
+
+{{{
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth,keepaspectratio]{Chapters/DataMining/figures/CandidateGeneration.pdf}
+\caption{Example of generating a set of candidate itemsets of size 4 ($C_4$) from a set of frequent itemsets of size 3 ($L_3$). At \textbf{join step}, we find every pair of itemsets from $L_3$ that can be joined (both itemsets must share the first 2 elements and the last element of the first itemset in the pair must be smaller than the last element of the second itemset). We join itemsets in each pair by writing down their first 2 common elements, then the last element of the first itemset, and then the last element of the second itemset. As an output of a join step, we get a set $L_3 \bowtie L_3$ containing 4 itemsets of size 4 that could potentially be frequent. At \textbf{prune step}, we select only those itemsets from $L_3 \bowtie L_3$ that satisfy the A-Priori property described by Equation~\ref{eq-APriori-APrioriProperty2}\colon\xspace every subset of a frequent itemset must be frequent. We only need to check if all subsets of size 3 belong to $L_3$. Because we already know that all subsets of every itemset from $L_3$ belong to $L_2$ or $L_1$. You can see that itemset $\{ a, b, c, d \}$ has a non-frequent subset $\{ a, c, d \}$ and itemset $\{ a, b, c, e \}$ has a non-frequent subset $\{ a, c, e \}$. THis means that only two itemsets can be selected as candidates\colon\xspace $C_4 = \{ \{ a, b, d, e \}, \{ b, c, d, e \} \}$.}
+\label{figAPrioriCandidateGeneration}
+\end{figure}
 }}}
 
 !!! Example Part 2: Mining Frequent Itemsets
@@ -490,7 +499,13 @@ Here is a way to interpret this: According to our database of transactions, 100\
 !!! Implementation
 @sec:APriori-Implementation
 
-We implement both itemset and association rules as classes. 
+In this section, we propose a way of implementing the A-Priori algorithm in a clean object-oriented way. You can see the UML diagram of our implementation in Figure *@figAPrioriUML*. It is divided into three layers:
+
+- ""Transactions Database"" - an adapter that provides a unified way of accessing different sources of transactions (such as a database or an array) and allows users to easily substitute one data source with another withot breaking any dependencies.
+- ""A-Priori Algorithm"" - the implementation of the A-Priori together with two special data structures for itemsets and association rules, as well as the hierarchy of metrics for analysing and filtering frequent itemsets and association rules that can be easily extended with new metrics.
+- ""GUI"" - a graphical user layer that uses Spec to present the results of the A-Priori algorithm and allows users to interact with those results.
+
+We will discuss specific components of this diagram in the following sections.
 
 {{{
 \begin{sidewaysfigure}
@@ -607,7 +622,7 @@ APrioriLiftMetric >> valueForAssociationRule: anAssociationRule
 
 Every part of the A-Priori algorithm operates on itemsets or association rules. In our implementation, they store items and the values of different metrics. You can see how they are UML diagram for ==APrioriItemset== and ==APrioriAssociationRule== in Figure *figAPrioriItemsetRuleUML*.
 
-+Itemse and association rule>figures/APrioriItemsetRuleUML|width=70|label=figAPrioriItemsetRuleUML+
++Itemset and association rule>figures/APrioriItemsetRuleUML|width=70|label=figAPrioriItemsetRuleUML+
 
 The values of metrics are stores in the dictionary whose keys are the metrics classes. This way, ==APrioriItemset== and ==APrioriAssociationRule== can be easily extended to support other metrics. Here is an example of a ==metricsValues== dictionary of an association rule {{{$\{bread\} \Rightarrow \{butter\}$}}} taken from the example in Section *@sec:APriori-ExampleAssociationRules* together with a value of one custom metric:
 
@@ -642,16 +657,24 @@ associationRules select: [ :rule | rule myCustomMetric > 0.3 ].
 
 !!!!! Itemset
 
+==APrioriItemset== is simply the set of items. However, it can not be implemented on top of the ==Set== collection because the itemset must be ordered (we need to make sure that elements are sorted in the ascending order and we need to have a way of accessing the last element of an itemset). That is why we implement ==APrioriItemset== as a subclass of ==CTOrderedSet== - a hybrid of ==Set== and ==OrderedCollection== provided by external the ==Containers== library.
+
+==CTOrderedSet== is a subclass of ==OrderedCollection== which means that instances of ==APrioriItemset== can be created in the same way as any other ordered collection (using ==new== and ==add== or ==with:==, ==withAll:==, etc.). To make it a bit easier to create itemsets from other collections, for example arrays, we extend ==Collection== with a simple method that converts it to an itemset:
+
+[[[
+Collection >> asItemset
+	^ APrioriItemset withAll: self
+]]]
+
+When an instance of ==APrioriItemset== is created, we initialize it with an empty dictionary of metrics values:
+
 [[[
 APrioriItemset >> initialize
 	super initialize.
 	metricsValues := Dictionary new.
 ]]]
 
-[[[
-APrioriItemset >> count: aNumber
-	metricsValues at: APrioriCountMetric put: aNumber
-]]]
+Two itemset metrics that are supported by default are count and support. They can be accessed through the ==metricsValue== accessor, but we also provide a handy syntactic sugar for those metrics:
 
 [[[
 APrioriItemset >> count 
@@ -663,26 +686,85 @@ APrioriItemset >> support
 	^ metricsValues at: APrioriSupportMetric
 ]]]
 
+==APrioriFrequentItemsetsSelector== will be using ==APrioriItemsetCounter== to get the count of each itemset and store it in that itemset's instance variable. To make its code a bit more readable and to release ==APrioriFrequentItemsetsSelector== from the responsibility of knowing the class name of ==APrioriCountMetric== (which is the key used to store count of an itemset in the dictionary), we provide a ==count:== setter accessor for ==APrioriItemset==:
+
 [[[
-APrioriItemset >> => anotherItemset
-	^ (self -> anotherItemset) asAssociationRule
+APrioriItemset >> count: aNumber
+	metricsValues at: APrioriCountMetric put: aNumber
 ]]]
+
+The = equality operation of an itemset checks only if two given itemsets have the same items. It does not check the equality of metrics. This is not wrong (in fact, this kind of "weak" equality can be useful in many situations), but for the purpose of testing, we also define the "strong" equality operation:
 
 [[[
 APrioriItemset >> =!= anObject
 	(self = anObject)
 		ifFalse: [ ^ false ].
 		
-	^ self metricsValues = anObject metrics.
+	^ self metricsValues = anObject metricsValues.
+]]]
+
+The conditions of "strong" equality are satisfied if and only if the given two itemsets have the same elements in the same order and the same dictionary of metrics values: 
+
+[[[
+itemset1 := #(a b c) asItemset.
+itemset2 := #(a b c) asItemset.
+
+itemset1 count: 42.
+itemset2 count: 24.
+
+itemset1 = itemset2. "true"
+itemset1 =!= itemset2. "false"
 ]]]
 
 !!!!! Association Rule
+
+An association rule is simply an association of two itemsets. But in the same way as with an itemset, we want association rules to know their metrics values. We therefore create a new class ==APrioriAssociationRule== which is a subclass of ==Association== but has an extra instance variable - a ==metricsValues== dictionary. We initialize this dictionary for every new instance of association rule:
 
 [[[
 APrioriAssociationRule >> initialize 
 	super initialize.
 	metricsValues := Dictionary new.
 ]]]
+
+We add two methods to simplify instance creation of association rules. First one is an extension method for ==Association== that converts it to ==APrioriAssociationRule==:
+
+[[[
+Association >> asAssociationRule
+	^ APrioriAssociationRule key: self key value: self value
+]]]
+
+Second one is an extra method for ==APrioriItemset== that allows us to easily construct association rules from two itemsets:
+
+[[[
+APrioriItemset >> => anotherItemset
+	^ (self -> anotherItemset) asAssociationRule
+]]]
+
+Here is an example of how you can create an association rule:
+
+[[[
+itemset1 := #(bread butter) asItemset.
+itemset2 := #(milk cereal eggs) asItemset.
+
+rule := itemset1 => itemset2.
+"{bread, butter} => {milk, cereal, eggs}"
+]]]
+
+Every association rule consists of key and value itemsets:
+
+[[[
+keyItemset
+	^ self key
+]]]
+
+[[[
+valueItemset
+	^ self value
+]]]
+
+In our implementation, association rule also holds the reference to its ==parentItemset== - the itemset from which this rule was generated. We could construct the parent itemset by joining key and value, but this would impose an extra responsibility on ==APrioriAssociationRule== to know how values of an itemset should be ordered. Also, keeping the reference to an original ==parentItemset== allows us to access its metrics values.
+
+We add accessors for the values of the four default metrics supported by association rules:
 
 [[[
 APrioriAssociationRule >> count
@@ -704,28 +786,54 @@ APrioriAssociationRule >> lift
 	^ metricsValues at: APrioriLiftMetric
 ]]]
 
+Finally, we implement the "strong" equality operation that checks the "strong" equality of key and value itemsets and the equality of the ==metricsValues== dictionary:
+
 [[[
 APrioriAssociationRule >> =!= anObject
 	(self species = anObject species)
 		ifFalse: [ ^ false ].
 		
-	(self key =!= anObject key)
+	(self keyItemset =!= anObject keyItemset)
 		ifFalse: [ ^ false ].
 		
-	(self value =!= anObject value)
+	(self valueItemset =!= anObject valueItemset)
 		ifFalse: [ ^ false ].
 		
-	^ self metricsValues = anObject metrics.
+	(self parentItemset =!= anObject parentItemset)
+		ifFalse: [ ^ false ].
+		
+	^ self metricsValues = anObject metricsValues.
 ]]]
 
 !!!! Implementation of Transactions
 
-+The flow of A-Priori algorithm>figures/APrioriTransactionsUML|width=60|label=figAPrioriTransactionsUML+
+At this moment, we are only concearned with relatively small transaction datasets that can be stored in a text file and loaded into a single array. However, many applications of A-Priori depend on databases that are too big to be loaded into the memory or even too big to be stored on a single machine. To make our implementation flexible, and independed of the method of storing and retrieving the data, we create an abstract class ==APrioriTransactions== that acts as an interface for a database of transactions. It allows us to work on arrays that can be easily substituted with any other data source if needed, simply by creating a subclass of ==APrioriTransactions== and providing implementations for the abstract methods. You can see the UML diagram of the transactions inheritance tree in Figure *@figAPrioriTransactionsUML*.
+
++An adapter for the database of transactions that allows us to easily substitute an array with a database connection.>figures/APrioriTransactionsUML|width=60|label=figAPrioriTransactionsUML+
+
+We need the transactions data source to support three operations:
+
+- ==do:== - to iterate through transactions and count the occurences of the given itemset;
+- ==size== - to know the total number of transactions and use it to scale metrics such as support or lift;
+- ==uniqueItems== - to get the itembase - the set of unique items that appear in transaction.
+
+We called the abstract method ==uniqueItems== to make it transparent for the developers who will implement the collection of transactions. But we also provide an alias ==itembase== that simply returns the value of ==uniqueItems==. Therefore, the implementors of transactions should know how to retrieve unique items, and the users of transactions can work with the itembase:
 
 [[[
 APrioriTransactions >> itembase
 	^ self uniqueItems 
 ]]]
+
+We provide one concrete subclass of ==APrioriTransactions== that is based on a simple array of arrays:
+
+[[[
+APrioriTransactions subclass: #APrioriTransactionsArray
+	instanceVariableNames: 'array'
+	classVariableNames: ''
+	package: 'APriori'
+]]]
+
+We implemented ==do:== and ==size== methods simply by delegating them to the array:
 
 [[[
 APrioriTransactionsArray >> do: aBlock 
@@ -737,6 +845,8 @@ APrioriTransactionsArray >> size
 	^ array size
 ]]]
 
+And ==uniqueItems== flattens the array of transactions and converts it to a set of items. This set will be used as an itembase:
+
 [[[
 APrioriTransactionsArray >> uniqueItems
 	^ (array flatCollect: #yourself) asSet
@@ -744,9 +854,22 @@ APrioriTransactionsArray >> uniqueItems
 
 !!!! Implementation of A-Priori
 
-+The flow of A-Priori algorithm>figures/APrioriCoreUML|label=figAPrioriCoreUML+
+Now that we have implemented all the auxillary classes such as ==APrioriTransactions==, ==APrioriMetrics==, ==APrioriItemset==, and ==APrioriAssociationRule==, we can start building the core of the A-Priori algorithm. It is described in Figure *@figAPrioriCoreUML*.
+
++TThe core of the A-Priori algorithm. The ==APriori== class is a facade that allows users to mine frequent itemsets and association rules. It uses ==APrioriCandidateGenerator== and ==APrioriFrequentItemsetSelector== to find frequent itemsets in the database of transactions. The expensive operation of iterating over the database and counting occurences of itemsets is localized in ==APrioriItemsetCounter==.>figures/APrioriCoreUML|label=figAPrioriCoreUML+
+
+==APriori== class uses two components for finding frequent itemsets (these are the same two components that were described in Section *@sec:APriori-APrioriAlgorithm* and shown in Figure *@figAPriori*):
+
+- ==APrioriCandidateGenerator== - a class that generates candidate itemsets of size {{{$k$}}} from the set of all frequent itemsets of size {{{$k-1$}}}.
+- ==APrioriFrequentItemsetSelector== - a class that selects only those candidates that pass the minimum count threshold.
+
+The expensive operation of counting the occurences of an itemset in the database of transactions is moved to a separate class ==APrioriItemsetCounter==. It is used by the ==APrioriFrequentItemsetSelector== to find the counts of candidate itemsets.
+
+The central idea of the A-Priori algorithm - its smart way of generating candidates is also implemented as a separate class ==APrioriCandidateGenerator==. This means that the algorithm can be easily modified by substituting candidate generator with another class.
 
 !!!!! Itemset Counter
+
+We start by implementing ==APrioriItemsetCounter==. It is the only class that has access to the transactions database. And it can only perform one simple operation: iterate through the transactions and counth those that include the given itemset:
 
 [[[
 APrioriItemsetCounter >> countOfItemset: anItemset
@@ -760,7 +883,11 @@ APrioriItemsetCounter >> countOfItemset: anItemset
 	^ count
 ]]]
 
+Notice that this method doesn't know anything about the implementation of transactions database. It only expects it to provide the ==do:== method for iterating the transactions. 
+
 !!!!! FrequentItemsetSelector
+
+Now we can build the ==APrioriFrequentItemsetSelector== which uses ==APrioriItemsetCounter== to count the occurences of every candidate itemset in the database of transactions, and selects only those itemsets that pass the minimum count threshold. We store the threshold inside an instance variable ==minCount== and provide both getter and setter accessors for it. We store the count of each itemset inside that itemset. This way the selected itemsets will remember their counts, and those counts will be used to calculate all other metrics:
 
 [[[
 APrioriFrequentItemsetSelector >> selectFrequentItemsets: aCollectionOfCandidates
@@ -772,6 +899,8 @@ APrioriFrequentItemsetSelector >> selectFrequentItemsets: aCollectionOfCandidate
 
 !!!!! Candidate Generator
 
+==APrioriCandidateGenerator== implements the candidates generation procedure described in Section *@sec:APriori-CandidateGeneration* and with Pseudocode *@funCandidateGeneration*. It takes as input frequent itemsets {{{$L_{k-1}$}}} from the previous iteration and uses them to generate candidate itemsets {{{$C_k$}}} that might be frequent on the next iteration. This is done in two steps: a join and a prune step:
+
 [[[
 APrioriCandidateGenerator >> generateCandidatesFrom: previousFrequentItemsets
 	| candidateItemsets |
@@ -779,6 +908,8 @@ APrioriCandidateGenerator >> generateCandidatesFrom: previousFrequentItemsets
 	candidateItemsets := self pruneItemsets: candidateItemsets basedOn: previousFrequentItemsets.
 	^ candidateItemsets 
 ]]]
+
+On the join step, the algorithm iterates through all possible pairs of frequent itemsets of size {{{$k-1$}}}, selects the pairs that can be joined and joins them according to the rules described in Section *@sec:APriori-CandidateGeneration*. This process generates candidates of size {{{$k$}}}:
 
 [[[
 APrioriCandidateGenerator >> joinItemsets: itemsets
@@ -788,12 +919,16 @@ APrioriCandidateGenerator >> joinItemsets: itemsets
 			thenCollect: [ :itemset2 | self joinItemset: itemset1 with: itemset2 ] ].
 ]]]
 
+The prune step removes all candidates that have at least one subset of size {{{$k-1$}}} that do not appear in the set of previous frequent itemsets {{{$L_{k-1}$}}} (and therefore do not satisfy the A-Priori property):
+
 [[[
 APrioriCandidateGenerator >> pruneItemsets: itemsets basedOn: previousFrequentItemsets
 	^ itemsets select: [ :itemset |
 		itemset allLargestSubsets allSatisfy: [ :subset |
 			previousFrequentItemsets includes: subset ] ].
 ]]]
+
+Now we implement two functions that were used by ==joinItemsets:==, one function to check if itemsets can be joined and another one to actually join them. Two itemsets of size {{{$k-1$}}} can be joined if all their elements, except for the last ones, are the same, and if the last element of the first itemset is greater than the last element of the second itemset:
 
 [[[
 APrioriCandidateGenerator >> canItemset: firstItemset beJoinedWith: secondItemset
@@ -805,6 +940,8 @@ APrioriCandidateGenerator >> canItemset: firstItemset beJoinedWith: secondItemse
 	^ (itemset1WithoutLast = itemset2WithoutLast) and: (firstItemset last < secondItemset last).
 ]]]
 
+To join two itemsets of size {{{$k-1$}}} (we already know that they can be joined), we take first {{{$k-2$}}} elements that they share, then add the last elemnt of the first itemset and then the last element of the second itemset. This is the same as simply appending the last element of the second itemset to the first itemset:
+
 [[[
 APrioriCandidateGenerator >> joinItemset: firstItemset with: secondItemset
 	| newItemset |
@@ -814,6 +951,12 @@ APrioriCandidateGenerator >> joinItemset: firstItemset with: secondItemset
 ]]]
 
 !!!!! A-Priori
+
+The ==APriori== class is the facade for the core of A-Priori implementation. Users of the algorithm will only interact with ==APriori== and it will iteratively use ==APrioriCandidateGenerator== and ==APrioriFrequentItemsetsSelector== to find frequent itemsets in the database of transactions.
+
+Frequent itemsets and association rules are stored in the corresponding instance variables of ==APriori==. Separately, it stores the list of metrics that user wants to calculate for frequent itemsets and association rules. Those lists can later be used to build a visual representation, such as a table of itemsets and their metrics values, without knowing in advance which metrics will be calculated.
+
+==APriori== must be initialized with the database of transactions. It will extract an itembase and a total number of transactions, and pass the database object to the ==APrioriFrequentItemsetsSelector== which in turn will use it to initialize the ==APrioriItemsetCounter==:
 
 [[[
 APriori >> initializeTransactions: transactions
@@ -825,6 +968,8 @@ APriori >> initializeTransactions: transactions
 	
 	frequentItemsets := OrderedCollection new.
 ]]]
+
+The method ==findFrequentItemsets== implements the procedure described in Section *@sec:APriori-APrioriAlgorithm* and with Pseudocode *@funAPriori*. It initializes candidate itemsets of size 1 using the whole itembas, then it selects only those itemsets that are frequent (that pass the threshold). Then it continues the grocess of generating candidates from previous frequent itemsets and selecting frequent candidates, until the set of frequent itemsets of size {{{$k$}}} becomes empty. At each step, frequent itemsets are added to the collection of frequent itemsets stored as an instance variable:
 
 [[[
 APriori >> findFrequentItemsets 
@@ -839,11 +984,15 @@ APriori >> findFrequentItemsets
 		frequentKItemsets := frequentItemsetSelector selectFrequentItemsets: candidates ].
 ]]]
 
+After all frequent itemsets have been found, ==APriori== can extract association rules from them. Unlike most implementations, we do not filter association rules using confidence threshold, because this can (and we believe that it should) be done later by the users of the ==APriori== class:
+
 [[[
 APriori >> buildAssociationRules
 	associationRules := frequentItemsets flatCollect: [ :itemset |
 		self allAssociationRulesFromItemset: itemset ].
 ]]]
+
+As it was described in Section *@sec:APriori-AssociationRules*, we can extract multiple association rules from any given itemset with at least two elements. This procedure is implemented by the following method:
 
 [[[
 APriori >> allAssociationRulesFromItemset: anItemset	
@@ -867,6 +1016,8 @@ APriori >> allAssociationRulesFromItemset: anItemset
 			yourself ]
 ]]]
 
+After the algorithm has found all frequent itemsets and generated association rules from them, the user can ask it to calculate certain metrics for itemsets and rules by providing an array of metrics classes. Each of those classes will be instanticated by the ==instantiateMetrics:== that is describe at the end of this section. To calculate the metrics for frequent itemsets, we instantiate those metrics, then we iterate through each itemset, calculate the the value of each metric for it and store the result inside that itemsets's ==metricsValues== dictionary. This way, we are completely independent of the concrete metrics that are being calculated and user can easily add a custom metric:
+
 [[[
 APriori >> calculateItemsetMetrics: aCollectionOfMetricsClasses
 	itemsetMetrics := self instantiateMetrics: aCollectionOfMetricsClasses.
@@ -876,6 +1027,8 @@ APriori >> calculateItemsetMetrics: aCollectionOfMetricsClasses
 			itemset metrics at: metric class put: (metric valueForItemset: itemset) ] ]
 ]]]
 
+We do the same for the association rules. But this time we call the ==valueForAssociationRule:== method of each metric:
+
 [[[
 APriori >> calculateAssociationRuleMetrics: aCollectionOfMetricsClasses
 	associationRuleMetrics := self instantiateMetrics: aCollectionOfMetricsClasses.
@@ -884,6 +1037,8 @@ APriori >> calculateAssociationRuleMetrics: aCollectionOfMetricsClasses
 		associationRuleMetrics do: [ :metric |
 			rule metrics at: metric class put: (metric valueForAssociationRule: rule) ] ]
 ]]]
+
+Before using them, we instantiate each metric, using their classes provided by the user, and initialize them with the number of transactions - a value that is used by some metrics to scale their results:
 
 [[[
 APriori >> instantiateMetrics: aCollectionOfMetricsClasses
