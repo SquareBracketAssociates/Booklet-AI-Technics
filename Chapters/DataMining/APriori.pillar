@@ -10,28 +10,28 @@ In this chapter, we discuss ''A-Priori'' - a fast and efficient algorithm for mi
 
 
 
-!!! Example 1: Problem Definition
+!!! Example: Problem Definition
 @sec:APriori-ProblemStatement
 
 You are given a database of transactions {{{$T$}}}:
 
 |! TID |! Transaction
-| 1 | {eggs, milk, butter}
-| 2 | {milk, cereal}
-| 3 | {eggs, bacon}
-| 4 | {bread, butter}
-| 5 | {bread, bacon, eggs}
-| 6 | {bread, avocado, butter, bananas}
+| 1 | =={eggs, milk, butter}==
+| 2 | =={milk, cereal}==
+| 3 | =={eggs, bacon}==
+| 4 | =={bread, butter}==
+| 5 | =={bread, bacon, eggs}==
+| 6 | =={bread, avocado, butter, bananas}==
 
-Remember that item base is a set of all products. You can construct it simply by selecting unique products from the database of transactions:
+Remember that item base is a set of all products. 
+You can construct it simply by selecting unique products from the database of transactions:
 
-{{{
-\[ B = \{ eggs, milk, butter, cereal, bacon, bread, avocado, bananas \} \]
-}}}
+''B'' = =={ eggs, milk, butter, cereal, bacon, bread, avocado, bananas}==
+
 
 Your task is to find a set {{{$\mathcal{F}$}}} of all frequent itemsets in this database given a support threshold {{{$minsup = 1/3$}}}. In other words, you have to identify all possible combinations of products that appear in at least 33.33\% of transactions (at least 2 out of 6).
 
-Note that in practice, it is faster to encode all items with integers before applying the APriori algorithm, and then decode the results before presenting them to the user. But encoding is optional and in this example, we process items as strings to make it more clear what is going on. We will discuss item encoding in Section *@sec:APriori-Implementation*.}$
+Note that in practice, it is faster to encode all items with integers before applying the APriori algorithm, and then decode the results before presenting them to the user. But encoding is optional and in this example, we process items as strings to make it more clear what is going on. We will discuss item encoding in Section *@sec:APriori-Implementation*.
 
 Turns out, this is not an easy thing to do.
 
@@ -44,7 +44,7 @@ itembase combinations select: [ :itemset |
     itemset support >= minsup ].
 ]]]
 
-However, the number of possible itemsets grows very quickly as you increase the size of an item base $B$. Note that the collection of all possible subsets of $B$ is called \textit{powerset} and denoted $\mathbb{P}(B)$}:
+However, the number of possible itemsets grows very quickly as you increase the size of an item base {{{$B$}}}. Note that the collection of all possible subsets of {{{$B$}}} is called ''powerset'' and denoted {{{$\mathbb{P}(B)$}}}:
 
 {{{
 \[ |\mathbb{P}(B)| = \sum_{k=0}^{|B|} C_k^{|B|} = 2^{|B|} \]
@@ -114,8 +114,7 @@ The set of all frequent itemsets in a database of transactions {{{$T$}}} with a 
 }}}
 
 
-@@note
-The goal of frequent itemset mining is to find the set of all frequent itemsets $\mathcal{F}$ given a set of transactions $T$ and a minimum support $minsup$.
+@@important The goal of frequent itemset mining is to find the set of all frequent itemsets {{{$\mathcal{F}$}}} given a set of transactions {{{$T$}}} and a minimum support {{{$minsup$}}}.
 
 
 !!! The A-Priori Property
@@ -145,27 +144,13 @@ This means that if support of an itemset {{{$I$}}} is less than the minimum supp
 \[ \forall I \subseteq J\ \colon\quad \Big(support(I) < minsup\Big)\ \ \implies\ \ \Big(support(J) < minsup\Big) \]
 }}}
 
-This gives us two equivalent statements which are known as an A-Priori Property${footnote:The second statement is the direct result of the first one based on the modus tollens rule of logic}$:
+This gives us two equivalent statements which are known as an A-Priori Property. The second statement is the direct result of the first one based on the modus tollens rule of logic.
 
-{{{
-\begin{tcolorbox}
-  \textbf{A-Priori Property\colon}
-  \begin{enumerate}
-    \item if an itemset is not frequent, then no superset of this itemset can be frequent
-      \begin{equation}
-      \forall I \subseteq J\ \colon\quad I \notin \mathcal{F}\ \ \implies\ \ J \notin \mathcal{F}
-      \label{eq-APriori-APrioriProperty1}
-      \end{equation}
-    \item all subsets of a frequent itemset are frequent
-      \begin{equation}
-      \forall I \subseteq J\ \colon\quad J \in \mathcal{F}\ \ \implies\ \ I \in \mathcal{F}
-      \label{eq-APriori-APrioriProperty2}
-      \end{equation}
-  \end{enumerate}
-\end{tcolorbox}
-}}}
+!!!! Key A-Priory Property.
+# if an itemset is not frequent, then no superset of this itemset can be frequent {{{\begin{equation} \forall I \subseteq J\ \colon\quad I \notin \mathcal{F}\ \ \implies\ \ J \notin \mathcal{F} \label{eq-APriori-APrioriProperty1} \end{equation} }}}
+#  all subsets of a frequent itemset are frequent {{{\begin{equation} \forall I \subseteq J\ \colon\quad J \in \mathcal{F}\ \ \implies\ \ I \in \mathcal{F} \label{eq-APriori-APrioriProperty2} \end{equation} }}}
 
-This property allows us to significantly reduce the search space for frequent itemsets. Turns out that we do not have to calculate the support of every possible combination of items. We can start with the smallest itemsets of size 1, select the frequent ones and consider only those itemsets of size 2 that don't have any non-frequent subsets of size 1. Then we repeat the same procedure for itemsets of size 3, 4, and so on. This is known as the A-Priori algorithm.
+This property allows us to significantly reduce the search space for frequent itemsets. We do not have to calculate the support of every possible combination of items. We can start with the smallest itemsets of size 1, select the frequent ones and consider only those itemsets of size 2 that don't have any non-frequent subsets of size 1. Then we repeat the same procedure for itemsets of size 3, 4, and so on. This is known as the A-Priori algorithm.
 
 !!! A-Priori Algorithm
 @sec:APriori-APrioriAlgorithm
@@ -182,14 +167,20 @@ We repeat the following two steps with {{{$k = 2, 3, \dots$}}} as long as the se
 To get a better intuition on the flow of the A-Priori algorithm, take a look on Figure *@figAPriori*. We start with a set of frequent itemsets {{{$L_1$}}}, use it to generate candidates {{{$C_2$}}}, then select frequent itemsets {{{$L_2$}}}, and continue this process until we get an empty set {{{$L_k = \varnothing$}}}.
 
 
-{{{
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{Chapters/DataMining/figures/APriori}
-\caption{A-Priori algorithm\colon We start with a set of frequent 1-itemsets $L_1$, then use it to generate candidates $C_2$, then select frequent 2-itemsets into a set $L_2$. We continue generating candidates $C_k$ from frequent itemsets $L_{k-1}$ and selecting candidates from $C_k$ that pass a support threshold into $L_k$. We stop this process when we get an empty set.}
-\label{figAPriori}
-\end{figure}
-}}}
+%{{{
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=\textwidth]{Chapters/DataMining/figures/APriori}
+%\caption{A-Priori algorithm\colon We start with a set of frequent 1-itemsets $L_1$, then use it to generate candidates $C_2$, then select frequent 2-itemsets into a set $L_2$. We %continue generating candidates $C_k$ from frequent itemsets $L_{k-1}$ and selecting candidates from $C_k$ that pass a support threshold into $L_k$. We stop this process when we get %an empty set.}
+%\label{figAPriori}
+%\end{figure}
+%}}}
+
+
++A-Priori algorithm: We start with a set of frequent 1-itemsets L@@1@@, then use it to generate candidates C@@2@@, then select frequent 2-itemsets into a set L@@2@@. We continue generating candidates C@@k@@ from frequent itemsets L@@k-1@@ and selecting candidates from C@@k@@ that pass a support threshold into L@@k@@. We stop this process when we get an empty set.>file://figures/APriori.png|width=80|label=figAPriori+
+
+
+
 
 The whole algorithm is formally described as Pseudocode *@funAPriori*. The function ==generateCandidates== will be defined in the next section, where we will talk about the process of candidate generation.
 
@@ -261,7 +252,7 @@ In this section, we will take a closer look at the candidate generation for the 
 % I write it in LaTeX because I need to insert equations into the list environment without breaking it into multiple lists
 {{{
 \begin{enumerate}
-\item \textbf{Join step} - we join the set $L_{k-1}$ with itself (this operation is denoted as $L_{k-1} \bowtie L_{k-1}$) according to the rules
+\item \textbf{Join step} - we join the set $L_{k-1}$ with itself (this operation is denoted as $L_{k-1} \bowtie L_{k-1}$).
 \begin{itemize}
 \item Every two itemsets $I = \{ i_1, i_2, \dots, i_{k-1} \}$ and $J = \{ j_1, j_2, \dots, j_{k-1} \}$ selected from $L_{k-1}$ can be joined if their first $k-2$ elements are the same and the last element of $I$ is smaller than the last element of $J$ (this ensures that the resulted itemset will be sorted and there will be no duplicate candidates)
 
@@ -276,44 +267,52 @@ In this section, we will take a closer look at the candidate generation for the 
 \end{enumerate}
 }}}
 
-This procedure is formally defined in Pseudocode *@funCandidateGeneration*. We also provide an ilustrative example of A-Priori candidate generation in Figure *@figAPrioriCandidateGeneration*.
+This procedure is formally defined in Pseudocode *@funCandidateGeneration*. We also provide an example of A-Priori candidate generation in Figure *@figAPrioriCandidateGeneration*.
 
-{{{
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth,keepaspectratio]{Chapters/DataMining/figures/CandidateGeneration.pdf}
-\caption{Example of generating a set of candidate itemsets of size 4 ($C_4$) from a set of frequent itemsets of size 3 ($L_3$). At \textbf{join step}, we find every pair of itemsets from $L_3$ that can be joined (both itemsets must share the first 2 elements and the last element of the first itemset in the pair must be smaller than the last element of the second itemset). We join itemsets in each pair by writing down their first 2 common elements, then the last element of the first itemset, and then the last element of the second itemset. As an output of a join step, we get a set $L_3 \bowtie L_3$ containing 4 itemsets of size 4 that could potentially be frequent. At \textbf{prune step}, we select only those itemsets from $L_3 \bowtie L_3$ that satisfy the A-Priori property described by Equation~\ref{eq-APriori-APrioriProperty2}\colon\xspace every subset of a frequent itemset must be frequent. We only need to check if all subsets of size 3 belong to $L_3$. Because we already know that all subsets of every itemset from $L_3$ belong to $L_2$ or $L_1$. You can see that itemset $\{ a, b, c, d \}$ has a non-frequent subset $\{ a, c, d \}$ and itemset $\{ a, b, c, e \}$ has a non-frequent subset $\{ a, c, e \}$. THis means that only two itemsets can be selected as candidates\colon\xspace $C_4 = \{ \{ a, b, d, e \}, \{ b, c, d, e \} \}$.}
-\label{figAPrioriCandidateGeneration}
-\end{figure}
-}}}
+!!!! Illustrating the candidate generation
 
-!!! Example 2: Mining Frequent Itemsets
+Let us have a look at Figure *@figAPrioriCandidateGeneration*.  
+
+At ""join step"", we find every pair of itemsets from L@@3@@ that can be joined: both itemsets must share the first 2 elements and the last element of the first itemset in the pair must be smaller than the last element of the second itemset. We join itemsets in each pair by writing down their first 2 common elements, then the last element of the first itemset, and then the last element of the second itemset. As an output of a join step, we get a set L@@3@@ {{{$\bowtie$}}} L@@3@@ containing 4 itemsets of size 4 that could potentially be frequent.
+
+At ""prune step"", we select only those itemsets from L@@3@@ {{{$\bowtie$}}} L@@3@@ that satisfy the A-Priori property described by Equation *@eq-APriori-APrioriProperty2*: every subset of a frequent itemset must be frequent. We only need to check if all subsets of size 3 belong to L@@3@@. Because we already know that all subsets of every itemset from L@@3@@ belong to L@@2@@ or L@@1@@. 
+
+You can see that itemset =={a, b, c, d} == has a non-frequent subset =={a, c, d}== and itemset =={a, b, c, e}== has a non-frequent subset =={a, c, e}==. This means that only two itemsets can be selected as candidates: ''C''@@4@@ = =={{a, b, d, e}, {b, c, d, e}}==.
+
+
++Example of generating a set of candidate itemsets of size 4 (C@@4@@) from a set of frequent itemsets of size 3 (L@@3@@).>file://figures/CandidateGeneration.pdf|width=100|label=figAPrioriCandidateGeneration+
+
+%{{{
+%\begin{figure}
+%\centering
+%\includegraphics[width=\textwidth,keepaspectratio]{Chapters/DataMining/figures/CandidateGeneration.pdf}
+%\caption{ At \textbf{join step}, we find every pair of itemsets from $L_3$ that can be joined (both itemsets must share the first 2 elements and the last element of the first itemset %in the pair must be smaller than the last element of the second itemset). We join itemsets in each pair by writing down their first 2 common elements, then the last element of the %first itemset, and then the last element of the second itemset. As an output of a join step, we get a set $L_3 \bowtie L_3$ containing 4 itemsets of size 4 that could potentially be %frequent. At \textbf{prune step}, we select only those itemsets from $L_3 \bowtie L_3$ that satisfy the A-Priori property described by %Equation~\ref{eq-APriori-APrioriProperty2}\colon\xspace every subset of a frequent itemset must be frequent. We only need to check if all subsets of size 3 belong to $L_3$. Because %we already know that all subsets of every itemset from $L_3$ belong to $L_2$ or $L_1$. You can see that itemset $\{ a, b, c, d \}$ has a non-frequent subset $\{ a, c, d \}$ and %itemset $\{ a, b, c, e \}$ has a non-frequent subset $\{ a, c, e \}$. THis means that only two itemsets can be selected as candidates\colon\xspace $C_4 = \{ \{ a, b, d, e \}, \{ b, %c, d, e \} \}$.}
+%\label{figAPrioriCandidateGeneration}
+%\end{figure}
+%}}}
+
+!!! Example: Mining Frequent Itemsets
 @sec:APriori-SimpleExample
 
 To initialize the A-Priori algorithm, we need to construct the set {{{$L_1$}}} containing all frequent 1-itemsets. To do that, we first create a set of candidates {{{$C_1$}}} - all items from the encoded item base {{{$B$}}} represented as itemsets of size 1:
 
-{{{
-\begin{align*}
-C_1 = \{ &\{eggs\}, \{milk\}, \{butter\}, \{cereal\},\\
-		 &\{bacon\}, \{bread\}, \{avocado\}, \{bananas\} \}
-\end{align*}
-}}}
+
+''C''@@1@@ = =={{eggs}, {milk}, {butter}, {cereal}, {bacon}, {bread}, {avocado}, {bananas}}==
 
 Now we calculate support of each candidate itemset:
 
 |! Itemset |! Support |! Itemset |! Support
-| {eggs} | 1/2 | {bacon} | 1/3
-| {milk} | 1/3 | {bread} | 1/2
-| {butter} | 1/2 | {avocado} | 1/6
-| {cereal} | 1/6 | {bananas} | 1/6
+| =={eggs}== | 1/2 | =={bacon}== | 1/3
+| =={milk}== | 1/3 | =={bread}== | 1/2
+| =={butter}== | 1/2 | =={avocado}== | 1/6
+| =={cereal}== | 1/6 | =={bananas}== | 1/6
 
-We can see that itemsets {{{$\{cereal\}$}}}, {{{$\{avocado\}$}}}, and {{{$\{bananas\}$}}} did not pass the minimum support threshold of 1/3. They don't appear in transactions often enough to be of any interest to us. And based on the A-Priori property, any set of items that includes at least one of those products, can not have higher support than 1/6. Therefore, cereal, avocado, and bananas will be excluded from further analysis.
+We can see that itemsets =={cereal}==, =={avocado}== and =={bananas}==did not pass the minimum support threshold of 1/3. They don't appear in transactions often enough to be of any interest to us. And based on the A-Priori property, any set of items that includes at least one of those products, can not have higher support than 1/6. Therefore, cereal, avocado, and bananas will be excluded from further analysis.
 
 Other itemsets have passed the support threshold, which means that they are frequent. We collect them into the set of frequent 1-itemsets:
 
-{{{
-\[ L_1 = \{ \{eggs\}, \{milk\}, \{butter\}, \{bacon\}, \{bread\} \} \]
-}}}
+''L''@@1@@ = =={ {eggs}, {milk}, {butter}, {bacon}, {bread} }==
+
 
 Now we generate the candidates of size 2. To do that, we first join the set of frequent 1-itemsets {{{$L_1$}}} with itself according to the rules of a join step described in Section *@sec:APriori-CandidateGeneration*:
 
@@ -334,17 +333,15 @@ Prune step of the algorithm deletes all itemsets of size {{{$k$}}} that contain 
 Once again, we calculate support of all candidate itemsets:
 
 |! Itemset |! Support |! Itemset |! Support
-| {eggs, milk} | 1/6 | {milk, bacon} | 0
-| {eggs, butter} | 1/6 | {milk, bread} | 0
-| {eggs, bacon} | 1/3 | {butter, bacon} | 0
-| {eggs, bread} | 1/6 | {butter, bread} | 1/3
-| {milk, butter} | 1/6 | {bacon, bread} | 1/6
+| =={eggs, milk}== | 1/6 | {milk, bacon} | 0
+| =={eggs, butter}== | 1/6 | {milk, bread} | 0
+| =={eggs, bacon}== | 1/3 | {butter, bacon} | 0
+| =={eggs, bread}== | 1/6 | {butter, bread} | 1/3
+| =={milk, butter}== | 1/6 | {bacon, bread} | 1/6
 
 Only two itemsets have passed the support thresholds, so only they are selected into the set of all frequent 2-itemsets:
 
-{{{
-\[ L_2 = \{ \{eggs, bacon\}, \{butter, bread\} \} \]
-}}}
+''L''@@2@@ = =={ {eggs, bacon}, {butter, bread} }==
 
 On the next iteration, join step produces an empty set, because the only pair of itemsets from {{{$L_2$}}} does not satisfy the join conditions listed in Section *@sec:APriori-CandidateGeneration* and can not be joined:
 
@@ -436,7 +433,7 @@ If occurences of {{{$I$}}} and {{{$J$}}} are independent, then {{{$P(I \cup J) =
 
 We invite you to prove that those two definitions of lift are equivalent.
 
-!!! Example Part 3: Mining Association Rules
+!!! Example: Mining Association Rules
 @sec:APriori-ExampleAssociationRules
 
 In this example, we will use frequent itemsets found in Section *@sec:APriori-SimpleExample* to produce association rules for the two values of minimum confidence threshold: {{{$minconf = 2/3$}}} and {{{$minconf = 1$}}}.
