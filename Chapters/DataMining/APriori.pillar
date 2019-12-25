@@ -296,7 +296,6 @@ You can see that itemset =={a, b, c, d} == has a non-frequent subset =={a, c, d}
 
 To initialize the A-Priori algorithm, we need to construct the set {{{$L_1$}}} containing all frequent 1-itemsets. To do that, we first create a set of candidates {{{$C_1$}}} - all items from the encoded item base {{{$B$}}} represented as itemsets of size 1:
 
-
 ''C''@@1@@ = =={{eggs}, {milk}, {butter}, {cereal}, {bacon}, {bread}, {avocado}, {bananas}}==
 
 Now we calculate support of each candidate itemset:
@@ -311,7 +310,7 @@ We can see that itemsets =={cereal}==, =={avocado}== and =={bananas}==did not pa
 
 Other itemsets have passed the support threshold, which means that they are frequent. We collect them into the set of frequent 1-itemsets:
 
-''L''@@1@@ = =={ {eggs}, {milk}, {butter}, {bacon}, {bread} }==
+''L''@@1@@ = =={{eggs}, {milk}, {butter}, {bacon}, {bread}}==
 
 
 Now we generate the candidates of size 2. To do that, we first join the set of frequent 1-itemsets {{{$L_1$}}} with itself according to the rules of a join step described in Section *@sec:APriori-CandidateGeneration*:
@@ -341,7 +340,7 @@ Once again, we calculate support of all candidate itemsets:
 
 Only two itemsets have passed the support thresholds, so only they are selected into the set of all frequent 2-itemsets:
 
-''L''@@2@@ = =={ {eggs, bacon}, {butter, bread} }==
+''L''@@2@@ = =={{eggs, bacon}, {butter, bread}}==
 
 On the next iteration, join step produces an empty set, because the only pair of itemsets from {{{$L_2$}}} does not satisfy the join conditions listed in Section *@sec:APriori-CandidateGeneration* and can not be joined:
 
@@ -367,20 +366,20 @@ The set of all frequent itemsets is the union of {{{$L_1$}}} and {{{$L_2$}}}:
 Below, you can find the list of frequent itemsets together with their count and support values (remember that count is support multiplied by the total number of transactions {{{$|T| = 6$}}}). These are all possible sets of products that appear in at least 33.33\% of transactions:
 
 |! Frequent itemset |! Count |! Support
-| {eggs} | 3 | 1/2
-| {milk} | 2 | 1/3
-| {butter} | 3 | 1/2
-| {bacon} | 2 | 1/3
-| {bread} | 3 | 1/2
-| {eggs, bacon} | 2 | 1/3
-| {butter, bread} | 2 | 1/3
+| =={eggs}== | 3 | 1/2
+| =={milk}== | 2 | 1/3
+| =={butter}== | 3 | 1/2
+| =={bacon}== | 2 | 1/3
+| =={bread}== | 3 | 1/2
+| =={eggs, bacon}== | 2 | 1/3
+| =={butter, bread}== | 2 | 1/3
 
 !!! Extracting Association Rules from Frequent Itemsets
 @sec:APriori-AssociationRules
 
 Once we have found the set of frequent itemsets {{{$\mathcal{F}$}}}, we can represent each itemset {{{$Q \in \mathcal{F}$}}} as a rule in form {{{$I \Rightarrow J$}}} where itemset {{{$I$}}} is a subset of {{{$Q$}}} such that {{{$I \neq \varnothing$}}} and {{{$I \neq Q$}}} and itemset {{{$J$}}} is a complement {{{$Q \setminus I$}}}.
 
-For example, itemset {{{$\{ bread, butter, milk \}$}}} produces 6 association rules:
+For example, itemset =={bread, butter, milk}== produces 6 association rules:
 
 {{{
 \[ \{ bread, butter \} \Rightarrow \{ milk \} \]
@@ -392,9 +391,8 @@ For example, itemset {{{$\{ bread, butter, milk \}$}}} produces 6 association ru
 }}}
 
 In the context of basket analysis, association rules can be interpreted in the following way:
-
-- {{{$\{ beer, peanuts \} \Rightarrow \{ chips \}$}}} - to every customer who buys beer and peanuts we should also recommend chips.
-- {{{$ \{ tea \} \Rightarrow \{ sugar, lemon \} $}}} - to every customer who buys tea we also recommend sugar and lemon.
+- =={beer, peanuts}== {{{\Rightarrow}}} =={chips}== - to every customer who buys beer and peanuts we should also recommend chips.
+- =={tea}== {{{\Rightarrow}}} =={sugar, lemon}== - to every customer who buys tea we also recommend sugar and lemon.
 
 Every rule {{{$I \Rightarrow J$}}} has count and support in the database of transactions. They are equal to the count and support of the itemset {{{$Q = I \cup J$}}} from which that rule was generated:
 
@@ -438,14 +436,11 @@ We invite you to prove that those two definitions of lift are equivalent.
 
 In this example, we will use frequent itemsets found in Section *@sec:APriori-SimpleExample* to produce association rules for the two values of minimum confidence threshold: {{{$minconf = 2/3$}}} and {{{$minconf = 1$}}}.
 
-Any itemset with at least 2 elements can produce multiple association rules. In our case, we only have two frequent itemsets with more than 1 element: {eggs, bacon} and {butter, bread}.
+Any itemset with at least 2 elements can produce multiple association rules. In our case, we only have two frequent itemsets with more than 1 element: =={eggs, bacon}== and =={butter, bread}==.
 
-Knowing that itemset {eggs, bacon} is frequent (customers often buy eggs and bacon together), we can generate two association rules from it:
+Knowing that itemset =={eggs, bacon}== is frequent (customers often buy eggs and bacon together), we can generate two association rules from it:
 
-{{{
-\[ \{ eggs \} \Rightarrow \{ bacon \} \]
-\[ \{ bacon \} \Rightarrow \{ eggs \} \]
-}}}
+     =={eggs}== {{{\Rightarrow}}} =={bacon}==  and =={bacon}== {{{\Rightarrow}}} =={eggs}==
 
 First rule means that we should recommend bacon to every customer who buys eggs. Second rule goes the other way around - recommend eggs to every customer who buys bacon. Notice that these are different rules and one of them may be more relevant than the other.
 
@@ -509,14 +504,12 @@ In this section, we propose a way of implementing the A-Priori algorithm in a cl
 
 We will discuss specific components of this diagram in the following sections.
 
-{{{
-\begin{sidewaysfigure}
-\centering
-\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{Chapters/DataMining/figures/APrioriUML.pdf}
-\caption{Implementation of the A-Priori algorithm}
-\label{figAPrioriUML}
-\end{sidewaysfigure}
-}}}
+
++Implementation of the A-Priori algorithm.>file://figures/APrioriUML.pdf|width=100|label=figAPrioriUML+
+
+
+
+
 
 !!!! Implementation of Metrics
 
