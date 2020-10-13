@@ -4,14 +4,14 @@ Every clustering algorithm has its own advantages and drawbacks. Validation of c
 
 Roughly, there are two major strategies to assess clustering quality:
 
-""External cluster evaluation"" : Which involves comparing results of a cluster method with already known labels of another reference cluster. This type of assessment is similar to supervised learning, in the sense that at least one of the clustering results is considered to have the ground truth clusters or represents the optimal solution. Examples of this type of metric are the ''Rand Index'' (Rand, 1971), the ''Adjusted Rand Index'' or ''ARI'' (Hubert and Arabie, 1985), the ''F-measure'', the ''Jaccard Index'' (Anderberg, 1973), the ''Dice Index'' (Dice, 1945; Sørensen, 1948) and the ''Normalised Mutual Information'' or ''NMI''.
+""External cluster evaluation"": Which involves comparing results of a cluster method with already known labels of another reference cluster. This type of assessment is similar to supervised learning, in the sense that at least one of the clustering results is considered to have the ground truth clusters or represents the optimal solution. Examples of this type of metric are the ''Rand Index'' (Rand, 1971), the ''Adjusted Rand Index'' or ''ARI'' (Hubert and Arabie, 1985), the ''F-measure'', the ''Jaccard Index'' (Anderberg, 1973), the ''Dice Index'' (Dice, 1945; Sørensen, 1948) and the ''Normalised Mutual Information'' or ''NMI''.
 
-""Internal cluster evaluation"" : Which does not use information outside the dataset, like human annotations, and involves summarization into a single quality score. In many applications ground truth labels are not available (consider for example streaming applications). Examples of this type of metric are the ''Root-mean-square standard deviation'' or ''RMSSTD/RMSD/RMSE'' and the ''R-squared'' or ''RS'' (Sharma, 1996), the ''Silhouette Coeffecient'' (Rousseeuw, 1987), the ''Davies-Bouldin Index'' or ''DB'' (Theodoridis and Koutroubas, 1999).
+""Internal cluster evaluation"": Which does not use information outside the dataset, like human annotations, and involves summarization into a single quality score. In many applications ground truth labels are not available (consider for example streaming applications). Examples of this type of metric are the ''Root-mean-square standard deviation'' or ''RMSSTD/RMSD/RMSE'' and the ''R-squared'' or ''RS'' (Sharma, 1996), the ''Silhouette Coeffecient'' (Rousseeuw, 1987), the ''Davies-Bouldin Index'' or ''DB'' (Theodoridis and Koutroubas, 1999).
 
 !!! Installation
 @chap:MLMetrics-Installation
 
-All algorithms described in this chapter are part of the MLMetrics project which can be found at https://github.com/pharo-ai/MLMetrics. To install MLMetrics, go to the Playground in your Pharo image and execute the following Metacello request (select it and press Do-it button or Ctrl+D):
+All algorithms described in this chapter are part of the MLMetrics project which can be found at *https://github.com/pharo-ai/MLMetrics*. To install MLMetrics, go to the Playground in your Pharo image and execute the following Metacello request (select it and press Do-it button or Ctrl+D):
 
 [[[
 Metacello new
@@ -30,6 +30,9 @@ A "Rand Index" (RI) is a Float between 0.0 and 1.0 representing the number of ag
 
 Let {{{$C_1$}}} and {{{$C_2$}}} be two sets, the ''Rand Index'' (R) is defined by the formula:
 
+@@todo add a diagram
+
+
 {{{
 \[ R(C_1,C_2) = \frac{a+b}{a+b+c+d} = \frac{a+b}{{n \choose 2 }} \]
 }}}
@@ -41,7 +44,7 @@ where:
 - {{{$c$}}} is the number of pairs of elements that are in the same subset in {{{$C_1$}}} but in different ones in {{{$C_2$}}}
 - {{{$d$}}} is the number of pairs of elements that are in different subsets in {{{$C_1$}}} but in the same in {{{$C_2$}}}
 - {{{$a + b$}}} the number of correct similar pairs plus the number of correct dissimilar pairs.
-- {{{$n \choose 2 $}}} is the number of total possible pairs (without ordering)
+- {{{$n \choose 2 $}}} is the number of total possible pairs (without ordering).
 
 If one of the partitions is considered to have the ground truth labels, the index can be also analysed as counting the True Positives (TP), True Negatives (TN), False Positives (FP) and False Negatives (FN) with the following equivalent formula:
 
@@ -60,10 +63,10 @@ The algorithm is based on counting pair of elements from both sets. It builds ev
 Transcript open.
 #(A B C)
 	combinations: 2 
-	atATimeDo: [ : each | Transcript cr; show: each printString ].
+	atATimeDo: [ :each | each traceCr ].
 ]]]
 
-Then it counts the number of pairs, in term of indices, which are in both clustering methods, and the number of pairs which are in different clusters. We will see this in detail in a following partial agreements example.
+Then it counts the number of pairs, in term of indices, which are in both clustering methods, and the number of pairs which are in different clusters. We will see this in detail in a following partial agreement example.
 
 !!!! Simple Example
 @sec:MLMetrics-RISimpleExample
@@ -94,7 +97,7 @@ MLRandIndex
 
 yields the same result as above of 0.0.
 
-!!!! Partial Agreements Example
+!!!! Partial Agreement Example
 @sec:MLMetrics-RIUserExample
 
 Imagine your application has queried five famous philosophers:
@@ -171,7 +174,9 @@ Applying these values to the RI formula:
 
 The Rand Index is this case is "0.8", and it represents the fraction of all pairs of points on which the two clusterings agree. 
 
-In practice, most applications use one or several corrected versions of the Rand Index, as the classic RI is highly dependent upon the number of clusters. This is, when the data set used is small or the number of clusters increase, there is a higher chance of agreements are overlaped just due to chance. A variation of RI should enable to adjust the amount of agreement in the cluster solutions with chance normalization and ignoring permutations, meaning that renaming labels does not affecting the score.
+In practice, most applications use one or several corrected versions of the Rand Index, as the classic RI is highly dependent upon the number of clusters. This is, when the data set used is small or the number of clusters increases, there is a higher chance of agreements are overlapped just due to chance. A variation of RI should enable to adjust the amount of agreement in the cluster solutions with chance normalization and ignoring permutations, meaning that renaming labels does not affecting the score.
+
+This is what we will see in the next section.
 
 !!! Adjusted Rand Index
 @sec:MLMetrics-ArjustedRandIndex
@@ -209,13 +214,13 @@ ADVISE NEEDED: ''This part of the equation is hard to explain it in words, I thi
 
 We follow the following conventions:
 
-|Algorithm |Instanciation Selector
+|!Algorithm |!Instantiation Selector
 |Hubert and Arabie | forIndexHA
 |Fowlkes–Mallows | forIndexFM
 |Mirkin Metric | forIndexMM
 |Jaccard Coefficient | forIndexJaccard
 
-The forAllIndexes method iterates through all subclasses of the abstract ==MLAdjustedRandIndex== and calculates the index for each strategy, returning a Matrix with results.
+The ==forAllIndexes== method iterates through all subclasses of the abstract ==MLAdjustedRandIndex== and calculates the index for each strategy, returning a Matrix with results.
 
 ADVISE NEEDED: ''Maybe I'm too contaminated with R, many packages have these type of one for all functions which spit out tables with a lot of indices''
 
@@ -228,13 +233,15 @@ To continue with the simplest example of a perfect agreement:
 [[[
 | clusterResult1 clusterResult2 |
 clusterResult1 := { 
-	'Hobbes'  -> 1  . 'Hegel' -> 1 .
-	'Husserl' -> 2  . 'Hume'  -> 2  }.
+	'Hobbes'  -> 1 . 'Hegel' -> 1 .
+	'Husserl' -> 2 . 'Hume'  -> 2  }.
 clusterResult2 := clusterResult1.
+]]]
 
+[[[
 MLAdjustedRandIndex forAllIndexes
-    score: clusterResult1 
-    with: clusterResult2.
+	score: clusterResult1 
+	with: clusterResult2.
 ]]]
 
 To follow a proper interpretation, Steinley (2004) indicates the following levels of agreement, based on its result:
