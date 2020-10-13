@@ -207,7 +207,7 @@ where:
 The algorithms begins constructing a contingency table by counting the co-occurrences of both cluster results. A contingency table is used to describe data which has more than one categorical variable. The rows represents categorical variables with the truth values, say from cluster result X, and columns represents values from predictions, for example in cluster Y. This kind of matrix includes an extra row and a right-most column representing the "marginals", used to asses statistical significance. Each cell in the matrix, i.e. each intersection, is the number of times an element appears in the combination of the particular row and column intersected. The right-bottom cell represents the total number of elements involved and is called the grand total. 
 
 
-ADVISE NEEDED: ''This part of the equation is hard to explain it in words, I think it is better to follow the example as with the Rand Index''
+ADVISE NEEDED: ''This part of the equation is hard to explain it in words, I think it is better to follow the example as with the Rand Index'' YES YES YES
 
 !!!! Designing the API
 @sec:MLMetrics-ARIAPI
@@ -221,8 +221,6 @@ We follow the following conventions:
 |Jaccard Coefficient | forIndexJaccard
 
 The ==forAllIndexes== method iterates through all subclasses of the abstract ==MLAdjustedRandIndex== and calculates the index for each strategy, returning a Matrix with results.
-
-ADVISE NEEDED: ''Maybe I'm too contaminated with R, many packages have these type of one for all functions which spit out tables with a lot of indices''
 
 [[[
 	MLAdjustedRandIndex forAllIndexes ...
