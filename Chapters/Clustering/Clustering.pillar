@@ -1,0 +1,361 @@
+!! Evaluating clustering performance
+
+Every clustering algorithm has its own advantages and drawbacks. Validation of cluster analysis is an important aspect of measuring how well multiple clustering methods performed on a data set. As clustering is more about discovering than an exact prediction method, several indices can be used to determine if the right number of clusters were discovered. 
+
+Roughly, there are two major strategies to assess clustering quality:
+
+""External cluster evaluation"" : Which involves comparing results of a cluster method with already known labels of another reference cluster. This type of assessment is similar to supervised learning, in the sense that at least one of the clustering results is considered to have the ground truth clusters or represents the optimal solution. Examples of this type of metric are the ''Rand Index'' (Rand, 1971), the ''Adjusted Rand Index'' or ''ARI'' (Hubert and Arabie, 1985), the ''F-measure'', the ''Jaccard Index'' (Anderberg, 1973), the ''Dice Index'' (Dice, 1945; Sørensen, 1948) and the ''Normalised Mutual Information'' or ''NMI''.
+
+""Internal cluster evaluation"" : Which does not use information outside the dataset, like human annotations, and involves summarization into a single quality score. In many applications ground truth labels are not available (consider for example streaming applications). Examples of this type of metric are the ''Root-mean-square standard deviation'' or ''RMSSTD/RMSD/RMSE'' and the ''R-squared'' or ''RS'' (Sharma, 1996), the ''Silhouette Coeffecient'' (Rousseeuw, 1987), the ''Davies-Bouldin Index'' or ''DB'' (Theodoridis and Koutroubas, 1999). This is the second type of evaluation we will see in this chapter.
+
+!!! Installation
+@chap:MLMetrics-Installation
+
+All algorithms described in this chapter are part of the MLMetrics project which can be found at https://github.com/pharo-ai/MLMetrics. To install MLMetrics, go to the Playground in your Pharo image and execute the following Metacello request (select it and press Do-it button or Ctrl+D):
+
+[[[
+Metacello new
+  baseline: 'MLMetrics';
+  repository: 'github://pharo-ai/MLMetrics/src';
+  load.
+]]]
+
+!!! Rand Index
+@chap:MLMetrics-RandIndex
+
+A "Rand Index" (RI) is a Float between 0.0 and 1.0 representing the number of agreements between two data clusterings, presumably from two different methods on the same data set. You may use the Rand Index score to compare how two partitions (clustering results) agreed. A value of 1.0 means that clusterings between two methods were the same, and these partitions agree perfectly, and 0.0 means that the two data clusterings disagree on any pair of points.
+
+!!!! Formal Definition
+@sec:MLMetrics-Definition
+
+Let {{{$C_1$}}} and {{{$C_2$}}} be two sets, the ''Rand Index'' (R) is defined by the formula:
+
+{{{
+\[ R(C_1,C_2) = \frac{a+b}{a+b+c+d} = \frac{a+b}{{n \choose 2 }} \]
+}}}
+
+where:
+
+- {{{$a$}}} is the number of pairs of elements that are in the same subset in both sets {{{$C_1$}}} and {{{$C_2$}}}.
+- {{{$b$}}} is the number of pairs of elements that are in different subsets in both sets {{{$C_1$}}} and {{{$C_2$}}}.
+- {{{$c$}}} is the number of pairs of elements that are in the same subset in {{{$C_1$}}} but in different ones in {{{$C_2$}}}
+- {{{$d$}}} is the number of pairs of elements that are in different subsets in {{{$C_1$}}} but in the same in {{{$C_2$}}}
+- {{{$a + b$}}} the number of correct similar pairs plus the number of correct dissimilar pairs.
+- {{{$n \choose 2 $}}} is the number of total possible pairs (without ordering).
+
+If one of the partitions is considered to have the ground truth labels, the index can be also analysed as counting the True Positives (TP), True Negatives (TN), False Positives (FP) and False Negatives (FN) with the following equivalent formula:
+
+{{{
+\[ RI = \frac {TP + TN}{TP + FP + FN + TN} \]
+}}}
+
+In such case, it is common to refer the first set to have "true clusterings" and the second set to represent the "predicted clusterings".
+
+!!!! Algorithm Description
+@sec:MLMetrics-RIAlgorithmDescription
+
+The algorithm is based on counting pair of elements from both sets. It builds every posible unordered pair of elements in each cluster result. Which pairs? The answer is the binomial coefficient and you can easily print this combination by evaluating:
+
+[[[
+Transcript open.
+#(A B C)
+	combinations: 2 
+	atATimeDo: #traceCr.
+]]]
+
+Then it counts the number of pairs, in term of indices, which are in both clustering methods, and the number of pairs which are in different clusters. We will see this in detail in a following partial agreement example.
+
+!!!! Simple Example
+@sec:MLMetrics-RISimpleExample
+
+We begin considering basic cases, to get an overview of the API. We can obtain the Rand index in Pharo using the ==MLRandIndex== class, passing as argument the collection of assignments for each clustering method. Notice both collections passed as parameters must have the same number of elements.
+
+[[[
+MLRandIndex 
+    score: #(1 1 1 0 0 0) 
+    with: #(1 1 1 0 0 0).
+]]]
+
+In this case, two exact clusterings result in a RI of 1.0 as both sets has the same assignments. Now let's consider two partitions without any pair in common:
+
+[[[
+MLRandIndex 
+    score: #(0 0 0 0 0 0) 
+    with: #(0 1 2 3 4 5).
+]]]
+
+Which results in 0.0, as every pair of points are in different clusters. The index is also symmetric:
+
+[[[
+MLRandIndex 
+    score: #(0 1 2 3 4 5)
+    with:  #(0 0 0 0 0 0).
+]]]
+
+yields the same result as above of 0.0.
+
+!!!! Partial Agreement Example
+@sec:MLMetrics-RIUserExample
+
+Imagine your application has queried five famous philosophers:
+
+[[[
+{ 'Spinoza' . 'Bentham' . 'Kant' . 'Foucault' . 'Plato' }
+]]]
+
+Then two hypothetical clusterings assigned three clusters to {{{$clusterResult1$}}} and three clusters to {{{$clusterResult2$}}} respectively. Now you want to evaluate if the clusters formed by each method are in concordance with each other. Note one of these clusterings may be considered the reference partition, for example, if one of them has a column which assigned the true labels. 
+
+[[[
+| clusterResult1 clusterResult2 |
+
+clusterResult1 := { 
+	'Spinoza'  -> 1 . 'Bentham' -> 1 . 
+	'Kant'     -> 2 . 
+	'Foucault' -> 3 . 'Plato'   -> 3 } collect: #value.
+
+clusterResult2 := { 
+	'Spinoza'  -> 1 . 'Bentham'  -> 1 . 
+	'Kant'     -> 2 . 'Foucault' -> 2 .
+	'Plato'    -> 3 } collect: #value.
+
+MLRandIndex 
+    score: clusterResult1 
+    with: clusterResult2.
+]]]
+
+Our collection has 5 elements, which results in 10 possible pairs of points: 
+
+{{{
+\[ X \Rightarrow \{ 
+\[ \{ Pair \{1, 2\} = (1,1) \} \]
+\[ \{ Pair \{1, 3\} = (1,2) \} \]
+\[ \{ Pair \{1, 4\} = (1,3) \} \]
+\[ \{ Pair \{1, 5\} = {1,3) \} \]
+\[ \{ Pair \{2, 3\} = (1,2) \} \]
+\[ \{ Pair \{2, 4\} = (1,3) \} \]
+\[ \{ Pair \{2, 5\} = (1,3) \} \]
+\[ \{ Pair \{3, 4\} = (2,3) \} \]
+\[ \{ Pair \{3, 5\} = (2,3) \} \]
+\[ \{ Pair \{4, 5\} = (3,3) \} \]
+\[ \{ Y \Rightarrow \{
+\[ \{ Pair \{1, 2\} = (1,1) \} \]
+\[ \{ Pair \{1, 3\} = (1,2) \} \]
+\[ \{ Pair \{1, 4\} = (1,2) \} \]
+\[ \{ Pair \{1, 5\} = {1,3) \} \]
+\[ \{ Pair \{2, 3\} = (1,2) \} \]
+\[ \{ Pair \{2, 4\} = (1,2) \} \]
+\[ \{ Pair \{2, 5\} = (1,3) \} \]
+\[ \{ Pair \{3, 4\} = (2,2  \} \]
+\[ \{ Pair \{3, 5\} = (2,3) \} \]
+\[ \{ Pair \{4, 5\} = (2,3) \} \]
+}}}
+
+Now let's proceed to count pairs of indices, suming up 1 as each case appears:
+
+- Pair {1, 2} in X and Y both have (1,1) -> they are assigned to the same cluster in X and Y, it counts as {{{$a$}}} (a = 1)
+- Pair {1, 3} in X and Y both have (1,2) -> they are assigned to different cluster in X and different cluster in Y, it counts as {{{$b$}}} (b = 1)
+- Pair {1, 4} in X is (1,3) and in Y is (1,2) -> they are assigned to different cluster in X and different cluster in Y, it counts as {{{$b$}}} (b = 2)
+- Pair {1, 5} in X and Y both have (1,3) -> they are assigned to different cluster in X and different cluster in Y, it counts as {{{$b$}}} (b = 3)
+- Pair {2, 3} in X and Y both have (1,2) -> they are assigned to different cluster in X and different cluster in Y, it counts as {{{$b$}}} (b = 4)
+- Pair {2, 4} in X is (1,3) and in Y is (1,2) -> they are assigned to different cluster in X and different cluster in Y, it counts as {{{$b$}}} (b = 5)
+- Pair {2, 5} in X and Y both have (1,3) -> they are assigned to different cluster in X and different cluster in Y, it counts as {{{$b$}}} (b = 6)
+- Pair {3, 4} in X is (2,3) and in Y is (2,2) -> they are assigned to different cluster in X and the same cluster in Y, it counts as {{{$d$}}} (d = 1)
+- Pair {3, 5} in X and Y both have (2,3) -> they are assigned to different cluster in X and different cluster in Y, it counts as {{{$b$}}} (b = 7)
+- Pair {4, 5} in X is (3,3) and in Y is (2,3) -> they are assigned to ths same cluster in X and different cluster in Y, it counts as {{{$c$}}} (c = 1)
+
+Applying these values to the RI formula:
+
+{{{
+\[ R(C_1,C_2) = \frac{1+7}{1+7+1+1} = \frac{1+7}{{5 \choose 2 }} = 0.8 \]
+}}}
+
+The Rand Index is this case is "0.8", and it represents the fraction of all pairs of points on which the two clusterings agree. 
+
+In practice, most applications use one or several corrected versions of the Rand Index, as the classic RI is highly dependent upon the number of clusters. This is, when the data set used is small or the number of clusters increase, there is a higher chance of agreements are overlaped just due to chance. A variation of RI should enable to adjust the amount of agreement in the cluster solutions with chance normalization and ignoring permutations, meaning that renaming labels does not affecting the score.
+
+!!! Adjusted Rand Index
+@sec:MLMetrics-ArjustedRandIndex
+
+The "Adjusted Rand Index" (ARI) is a Float between -1.0 and 1.0, where positive values mean that pairs in the known clusters and predicted clusters are similar, being 1.0 the perfect agreement and 0.0 a chance agreement, and negative values mean that pairs in the known clusters and predicted clusters are highly different. Certainly, the higher the value of ARI, the better the predictive ability of the evaluated clustering method. The "adjusted" part comes from the fact that a random result is scored as 0.
+
+A word of caution: There are several measures of ARI, and actually the first two initial formulas are referred in the literature with similar names: The Morey and Agresti (1984) is usually referred as MA or {{{$ARI_m_a$}}} , and a corrected version from Hubert and Arabie (1985) known as HA or {{{$ARI_h_a$}}}. Additional variations of ARI appeared later and they are: "Fowlkes–Mallows" Index or FMI, "Mirkin Metric" and the "Jaccard Coefficient". 
+
+In this section we will describe the Hubert and Arabie formula.
+
+!!!! Formal Definition
+@sec:MLMetrics-ARIDefinition
+
+The ARI is defined by the formula:
+
+{{{ 
+\[ \text{ARI} = \frac{\text{RI} - E[\text{RI}]}{\max(\text{RI}) - E[\text{RI}]} \]
+}}}
+
+where:
+
+-  The denominator max(RI) represents the maximum possible RI, defined as the permutation sum of rows plus sum of columns divided then by 2: {{{ \[ Max(RI)=\frac{\sum{a_i\choose2}+\sum{b_j\choose2}}{2} \] }}}
+- E(RI) is ....
+
+!!!! Algorithm Description
+@sec:MLMetrics-ARIAlgorithmDescription
+
+The algorithms begins constructing a contingency table by counting the co-occurrences of both cluster results. A contingency table is used to describe data which has more than one categorical variable. The rows represents categorical variables with the truth values, say from cluster result X, and columns represents values from predictions, for example in cluster Y. This kind of matrix includes an extra row and a right-most column representing the "marginals", used to asses statistical significance. Each cell in the matrix, i.e. each intersection, is the number of times an element appears in the combination of the particular row and column intersected. The right-bottom cell represents the total number of elements involved and is called the grand total. 
+
+
+ADVISE NEEDED: ''This part of the equation is hard to explain it in words, I think it is better to follow the example as with the Rand Index''
+
+!!!! Designing the API
+@sec:MLMetrics-ARIAPI
+
+We follow the following conventions:
+
+|Algorithm |Instanciation Selector
+|Hubert and Arabie | forIndexHA
+|Fowlkes–Mallows | forIndexFM
+|Mirkin Metric | forIndexMM
+|Jaccard Coefficient | forIndexJaccard
+
+The forAllIndexes method iterates through all subclasses of the abstract ==MLAdjustedRandIndex== and calculates the index for each strategy, returning a Matrix with results.
+
+ADVISE NEEDED: ''Maybe I'm too contaminated with R, many packages have these type of one for all functions which spit out tables with a lot of indices''
+
+[[[
+	MLAdjustedRandIndex forAllIndexes ...
+]]]
+
+To continue with the simplest example of a perfect agreement:
+
+[[[
+| clusterResult1 clusterResult2 |
+clusterResult1 := { 
+	'Hobbes'  -> 1  . 'Hegel' -> 1 .
+	'Husserl' -> 2  . 'Hume'  -> 2  }.
+clusterResult2 := clusterResult1.
+
+MLAdjustedRandIndex forAllIndexes
+    score: clusterResult1 
+    with: clusterResult2.
+]]]
+
+To follow a proper interpretation, Steinley (2004) indicates the following levels of agreement, based on its result:
+
+- An index greater than 0.90 are considered excellent recovery
+- An index greater than 0.80 are considered good recovery, 
+- An index greater than 0.65 are considered moderate recovery 
+- An index less than 0.65 are considered poor recovery
+
+!!! Fowlkes–Mallows Index
+@sec:MLMetrics-FMI
+
+''Work in progress''
+The FMI is a Float value between 0.0 and 1.0.
+
+!!!! Formal Definition
+@sec:MLMetrics-FMIDefinition
+
+{{{
+\[ \text{FMI} = \frac{\text{TP}}{\sqrt{(\text{TP} + \text{FP}) (\text{TP} + \text{FN})}} \]
+}}}
+
+!!! Mirkin Metric
+@sec:MLMetrics-Mirkin
+
+ADVISE NEEDED: ''It doesn't seem widely used as ARI, FMI and Jaccard, but I should double check''
+
+''Work in progress''
+
+!!! Jaccard Distance
+@sec:MLMetrics-Jaccard
+
+''Work in progress''
+
+The Jaccard Index, also known as the Jaccard similarity coefficient, is a Float value between 0.0 and 1.0 which measures the degree of overlap between two sets, in a very similar fashion to the Rand Index, except that True Negatives are not considered. The closer to 1.0, the more similar the two datasets, the close to 0.0 the more dissimilar.
+
+!!!! Formal Definition
+@sec:MLMetrics-JaccardDefinition
+
+The formal definition is:
+
+{{{
+\[ J(A,B) = {{|A \cap B|}\over{|A \cup B|}} = {{|A \cap B|}\over{|A| + |B| - |A \cap B|}} \]	
+}}}
+
+Intuitively, it can defined as follows:
+
+{{{
+\[ Jaccard Index = {{number of unique elements in both sets}}\over{{total number of unique elements in either set}} \]
+}}}
+
+
+!!! The Dice Index
+@sec:MLMetrics-Dice
+
+Also known as Sørensen–Dice coefficient, or F1 score, represents the harmonic mean of the precision and recall. 
+
+''Work in progress''
+
+!!! Normalised Mutual Information (NMI)
+@sec:MLMetrics-NMI
+
+The NMI is a Float number between 0.0 and 1.0 and represents a measure of 
+NMI is a specialization of another metric called Mutual Information (MI), taking into account , and similarly to the RI, both NMI and MI are not adjusted against chance.
+
+!!!! Formal Definition
+@sec:MLMetrics-NMIDefinition
+
+{{{ 
+\[ \text{NMI}(U, V) = \frac{\text{MI}(U, V)}{\text{mean}(H(U), H(V))} \]
+}}}
+
+!!! Mutual Information (MI)
+@sec:MLMetrics-NMI
+Mutual Information (MI)
+
+!!!! Formal Definition
+@sec:MLMetrics-MIDefinition
+
+The MI formula is defined by:
+
+{{{ 
+\[ \text{MI}(U, V) = \sum_{i=1}^{|U|} \sum_{j=1}^{|V|} \frac{|U_i \cap V_j|}{N}\log\left(\frac{N|U_i \cap V_j|}{|U_i||V_j|}\right) \]
+}}}
+
+!!! Silhouette Coeffecient
+@chap:MLMetrics-Silhouette
+
+''Work in progress''
+
+The Silhouette Coeffecient (also known as the Silhouette Index) is a Float value between -1.0 and 1.0 and represents a measure of how well observations are separated from neighboring clusters. A high value means that the object is well suited to its own cluster, and poorly suited to the adjacent cluster. It is useful when ground-truth labels are not known, it is possible to use the model itself to determine accuracy confirmation within data clusters. This approach may provide a concise graphical representation of how well each object has been categorized.
+
+The method is based on the average distance from one given object to those of the same cluster as that object, compared with the similar average distance from the best alternative cluster.
+
+- First calculate the average distance within the cluster.
+- Each cluster member has its own average distance from all other members of the same cluster.
+- The average of these averages is the dissimilarity score for the cluster.
+
+!!!! Formal Definition of Silhouette Coeffecient
+@sec:MLMetrics-SilhouetteDefinition
+
+The Silhouette Coeffecient, for a single sample, is defined by:
+
+{{{
+\[ s = \frac{b - a}{max(a, b)} \]
+}}}
+
+!!! Bibliography
+
+Rand, W.M. 1971. Objective criteria for the evaluation of clustering methods. Journal of the American Statistical Association 66: 846--850.
+
+Hubert, L. and Arabie, P. 1985. Comparing partitions. Journal of Classification. 2: 193--218.
+
+Sørensen, T. (1948). "A method of establishing groups of equal amplitude in plant sociology based on similarity of species and its application to analyses of the vegetation on Danish commons". Kongelige Danske Videnskabernes Selskab. 5 (4): 1–34.
+
+Dice, Lee R. (1945). "Measures of the Amount of Ecologic Association Between Species". Ecology. 26 (3): 297–302. doi:10.2307/1932409. JSTOR 1932409.
+
+Peter J. Rousseeuw (1987). "Silhouettes: a Graphical Aid to the Interpretation and Validation of Cluster Analysis". Computational and Applied Mathematics. 20: 53–65. doi:10.1016/0377-0427(87)90125-7.
+
+Davies, D., Bouldin, D.: A cluster separation measure. IEEE PAMI 1(2), 224–227 (1979)
+
+Sharma, S.C. (1996). Applied Multivariate Techniques. John Wiley and Sons.
+
+Theodoridis, S. and Koutroubas, K. (1999). Pattern Recognition. Academic Press.
