@@ -75,24 +75,24 @@ We begin considering basic cases, to get an overview of the API. We can obtain t
 
 [[[
 MLRandIndex 
-    score: #(1 1 1 0 0 0) 
-    with: #(1 1 1 0 0 0).
+    clusterA: #(1 1 1 0 0 0) 
+    clusterB: #(1 1 1 0 0 0).
 ]]]
 
 In this case two exact clusterings result in a RI of 1.0 as both sets has the same assignments. Now let's consider two partitions without any pair in common:
 
 [[[
 MLRandIndex 
-    score: #(0 0 0 0 0 0) 
-    with: #(0 1 2 3 4 5).
+    clusterA: #(0 0 0 0 0 0) 
+    clusterB: #(0 1 2 3 4 5).
 ]]]
 
 Which results in 0.0, as every pair of points are in different clusters. The index is also symmetric:
 
 [[[
 MLRandIndex 
-    score: #(0 1 2 3 4 5)
-    with:  #(0 0 0 0 0 0).
+    clusterA: #(0 1 2 3 4 5)
+    clusterB: #(0 0 0 0 0 0).
 ]]]
 
 yields the same result as above of 0.0.
@@ -122,8 +122,8 @@ clusterResult2 := {
 	'Plato'    -> 3 } collect: #value.
 
 MLRandIndex 
-    score: clusterResult1 
-    with: clusterResult2.
+    clusterA: clusterResult1 
+    clusterB: clusterResult2.
 ]]]
 
 Our collection has 5 elements, which results in 10 possible pairs of points: 
@@ -198,16 +198,16 @@ The ARI is defined by the formula:
 
 where:
 
--  The denominator max(RI) represents the maximum possible RI, defined as the permutation sum of rows plus sum of columns divided then by 2: {{{ \[ Max(RI)=\frac{\sum{a_i\choose2}+\sum{b_j\choose2}}{2} \] }}}
-- E(RI) is ....
+- The numerator RI is the (General) Rand Index.
+- The denominator max(RI) represents the maximum possible RI, defined as the permutation sum of rows plus sum of columns divided then by 2: {{{ \[ Max(RI)=\frac{\sum{a_i\choose2}+\sum{b_j\choose2}}{2} \] }}}
+- E(RI) is the Expected Maximum Index.
 
 !!!! Algorithm Description
 @sec:MLMetrics-ARIAlgorithmDescription
 
-The algorithms begins constructing a contingency table by counting the co-occurrences of both cluster results. A contingency table is used to describe data which has more than one categorical variable. The rows represents categorical variables with the truth values, say from cluster result X, and columns represents values from predictions, for example in cluster Y. This kind of matrix includes an extra row and a right-most column representing the "marginals", used to asses statistical significance. Each cell in the matrix, i.e. each intersection, is the number of times an element appears in the combination of the particular row and column intersected. The right-bottom cell represents the total number of elements involved and is called the grand total. 
+The algorithms begins constructing a contingency table by counting the co-occurrences of both cluster results. In general terms, a contingency table is used to describe data which has more than one categorical variable. The rows represents categorical variables with the truth values, say from cluster result A, and columns represents values from predictions, for example in cluster result B. This kind of matrix includes an extra row and a right-most column representing the "marginals", used to asses statistical significance. Each cell in the matrix, i.e. each intersection, is the number of times an element appears in the combination of the particular row and column intersected. The right-bottom cell represents the total number of elements involved and is called the grand total. 
 
-
-ADVISE NEEDED: ''This part of the equation is hard to explain it in words, I think it is better to follow the example as with the Rand Index''
+@@todo add example and/or diagram
 
 !!!! Designing the API
 @sec:MLMetrics-ARIAPI
@@ -221,8 +221,6 @@ We follow the following conventions:
 |Jaccard Coefficient | forIndexJaccard
 
 The ==forAllIndexes== method iterates through all subclasses of the abstract ==MLAdjustedRandIndex== and calculates the index for each strategy, returning a Matrix with results.
-
-ADVISE NEEDED: ''Maybe I'm too contaminated with R, many packages have these type of one for all functions which spit out tables with a lot of indices''
 
 [[[
 	MLAdjustedRandIndex forAllIndexes ...
@@ -240,8 +238,8 @@ clusterResult2 := clusterResult1.
 
 [[[
 MLAdjustedRandIndex forAllIndexes
-	score: clusterResult1 
-	with: clusterResult2.
+	clusterA: clusterResult1 
+	clusterB: clusterResult2.
 ]]]
 
 To follow a proper interpretation, Steinley (2004) indicates the following levels of agreement, based on its result:
@@ -267,7 +265,6 @@ The FMI is a Float value between 0.0 and 1.0.
 !!! Mirkin Metric
 @sec:MLMetrics-Mirkin
 
-ADVISE NEEDED: ''It doesn't seem widely used as ARI, FMI and Jaccard, but I should double check''
 
 ''Work in progress''
 
