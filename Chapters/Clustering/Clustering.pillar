@@ -1,3 +1,161 @@
+!! Basics
+@sec:MLClustering-Basics
+
+Real world data is mostly complex. To make sense of data requires approaches to shape it. While doing this we can discover patterns to understand data better, and one of the well-known methods is clustering. A cluster is a set of objects that share similar features, while clustering is called the technique that divides the observations (called ''data points'' in the Machine Learning vocabulary) into groups to get an insight into this data in an ""unsupervised way"". Clustering is also viewed as automatic labeling a dataset, by discovering the groups in it.
+
+In a more object-oriented sense, a clustering algorithm can be seen as a Strategy object with multiple features such as exclusiveness, nesting, completeness, and others besides the space and efficency factors.
+
+''Work in progress''
+
+!! API
+@sec:MLClustering-APIIntroduction
+
+!!! Exclusiveness
+@sec:MLClustering-Exclusiveness
+
+A clustering algorithm could consider its observations to be:
+
+- Exclusive: Each observation can only belongs to one cluster. Answers <true> to #isExclusive.
+- Overlapping: An observation could be grouped in multiple clusters. Answer <true> to #isOverlapping.
+- Fuzzy: Maps each observation to its own cluster. Answer <true> to #isFuzzy.
+
+!!! Nesting
+@sec:MLClustering-Nesting
+
+Another distinguishing characteristic is when the algorithm allows clusters to be nested. These types of algorithms are said to implement ""Hierarchical Clustering"" (examples are DBSCAN, OPTICS and Ward). On the other side, when nesting is not allowed during cluster formation, it is ""Partitional Clustering"" (k-means, k-medoids, k-medians, mean-shift, etc). We can obtain which type of nesting implements a class using the following methods:
+
+- Hierachical Clustering: Answer <true> to #isHierarchical.
+- Partitional Clustering: Answer <true> to #isPartitional.
+
+[[[
+MLKMeans isPartitional.
+]]]
+
+!!! Completeness
+@sec:MLClustering-Completeness
+
+It applies to observations which could be left without belonging to any cluster. To query which kind is implememented by a class, we have two methods:
+
+- Complete: All observations are assigned to a cluster. Answer ''<true>'' to #isComplete.
+- Partial: There are observations which could have no cluster. Answer ''<true>'' to #isPartial.
+
+!! k-means Clustering
+@sec:MLMetrics-KMeansIntroduction
+
+k-means is a clustering prediction method from an unlabeled dataset, which you can use for example, to identify communities in social networks, to group music for different themes, to perform customer segmentation, to implement a recommendation system, and many other areas. It is very popular due to being fast, but as a drawback, it requires a number of clusters (k) to be specified beforehand. In this regard, an inappropriate choice for K may result in a poor clustering performance. 
+
+
+!!! Algorithm Description
+@sec:MLMetrics-KMeansDescription
+
+The k-means algorithm build non-overlapping groups by randomly selecting K prototypes from the input observations. These prototypes are selected by the algorithm itself as centroids to represent each cluster.
+
+Figure 1.
+
+As next step, it calculates the distance (several distance algorithms are available) between the data points and all centroids, assigning observations (data points) to a single cluster, represented by its closest prototype. The key part of k-means algorithm is to "move" each centroid to the average location of its assigned observations. The move causes some of the initial assignments not to be closer to its centroid anymore, and then assignments should be updated.
+
+Figure 2.
+
+
+The updating cluster centers and reassigning observations continues till the cluster centers stop changing.
+
+''Work in progress''
+
+!!! The Iris Dataset
+@sec:MLClustering-Iris
+
+Our final goal in this section is to build a ""clustering model"" to make predictions. We will work with the famous ""Iris-Flowers"" plants dataset, published by the statistician and biologist Ronald Fisher in 1936. It consists of 150 flowers, carefully measured, and divided into 3 species groups of 50 flowers each. We advise to not underestimate the features of this dataset, as it is used as a toy data example as basis for understanding how clustering works. 
+
+The Iris-Flowers dataset is available in the Datasets package which can be loaded with the expression:
+
+[[[
+Metacello new
+  baseline: 'Datasets';
+  repository: 'github://PharoAI/Datasets';
+  load.
+]]]
+
+We can quickly inspect the dataset contents by evaluating:
+
+[[[
+Dataset loadIris.
+]]]
+
+- The dataset has 3 species of flowers: Setosa, Versicolor, and Virginica
+- The dataset has 5 features: ''PetalLength'', ''PetalWidth'', ''SepalLength'', ''SepalWidth'', and ''Species''. The sepal and petal parts measures are expressed in centimeters and, to have a visual reference, they could be seen with the folllowing picture:
+
++Difference between Sepal and Petal features>file://figures/451px-Petal-sepal.png|width=40|label=figPetalSepal+
+
+%{{{
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=\textwidth]{Chapters/Clustering/figures/451px-Petal-sepal}
+%\caption{Difference between Sepal and Petal features}
+%\label{figPetalSepal}
+%\end{figure}
+%}}}
+
+We can query here the first observations to get a overview of the dataset:
+
+[[[
+self head 
+]]]
+
+By quickly observing the data, we can notice we are conceeding multiple assumptions here: The whole dataset comes from a single experiment under almost perfect laboratory conditions, where variables are in the same measure (in this case centimeters), hence comparable, and even published in a peer-reviewed scientific journal! Real scenarios are not so kind. Variables could have different types and importance, it could contains missing values everywhere, have an undefined or unparseable format, probably should be combined, scaled and scored, added, just to name a few.
+
+For now we can get a first challenge here, namely interpretation. Which variables are the important ones in this dataset to get a predictive model? All of them? It would be nice to plot these observations with Roassal, but we have 5 variables and just only 2 or 3 dimensions we can "easily" plot. Let's take the x dimension to be the "PetalLength" and the y dimension to be "PetalWidth".
+
+[[[
+RTGrapher
+]]]
+
+
+''Work in Progress''
+
+!!! Simple Example
+@sec:MLClustering-KMeansSimpleExample
+
+!!!! Create the Model
+@sec:MLClustering-KMeansCreateModel
+
+Create a clustering using:
+
+[[[
+| df kmeans |
+df := Datasets loadIris.
+kmeans := KMeans numberOfClusters: 3.
+]]]
+
+The selection of a "good value" of K usually requires a good understanding of the domain model, for example one may choose K = 3 under the knowledge of the domain model has three kinds of diagnostics (whatever they are), or K = 2 when there are two types of insurances. You can easily run KMeans with several values of K, but at some point the refinement makes no difference to the final predictions and comparing results between different values of K is time-consuming.
+
+Of course we already know there are 3 real clusters but let us pretend, for the sake of learning k-means, to ignore the "species" column. We will see later there are methods to obtain a good number of clusters, known as the "elbow method".
+
+We have a kmeans object, which does nothing but get instantiated. To start building the kmeans cluster model, it should be "fitted" or " trained". To do it we select the features we would like to use to predict our target variable.
+
+[[[
+kmeans fit: ...
+]]] 
+
+The iteration proceeds as follows:
+
+- Place k (3) random points into the data space. We call them "centroids".
+- Assign each observation to its nearest centroid, in our case, A B C are assigned to the centroid 1, and the C, D are assigned to the centroid 2.
+- Calculates the distance from the centroid to observation points. This is normally done using the Euclidean method.
+
+''Work in progress''
+
+!!!! Make Predictions
+@sec:MLClustering-KMeansMakePredictions
+
+
+''Work in progress''
+
+!!! Variations of k-means
+@sec:MLClustering-KMeansVariations
+
+''Work in progress''
+
+
 !! Evaluating clustering performance
 
 Every clustering algorithm has its own advantages and drawbacks. Validation of cluster analysis is an important aspect of measuring how well multiple clustering methods performed on a data set. As clustering is more about discovering than an exact prediction method, several indices can be used to determine if the right number of clusters were discovered. This is what the K in clustering algorithms (k-means, k-medians, kNN) is about after all.
@@ -25,7 +183,7 @@ Metacello new
 
 We will introduce here general conventions and practices understood by all metrics. These methods are considered stable and supported for all metrics implemented in the ==MLMetrics== package. 
 
-Most, if not all, metrics are known with different names. All the metrics subclass ==MLClusteringMetric== and implements the #names method answering a Collection of sub-collections, where each one contains the synonyms for each metric. You can obtain all the available metrics names with ==availableMetricNames== as follows:
+Most, if not all, metrics are known with different names. All the metrics subclass ==MLClusteringMetric== and implements the #names method answering a ==Collection== of sub-collections, where each one contains the synonyms for each metric in English language. You can obtain all the available metrics names with ==availableMetricNames== as follows:
 
 [[[
 	MLClusteringMetric availableMetricNames.
@@ -45,11 +203,11 @@ Also all metrics return a ==Float== value. In this case, an utility method to co
 	MLAdjustedRandIndex new numberOfWishedDecimal: 4.
 ]]]
 
-To configure the default number of wished decimal for any metric, the ==defaultNumberOfWishedDecimal== is provided.
+To configure the default number of wished decimal for any metric, you may override the ==defaultNumberOfWishedDecimal== method in your own class.
 
-The method to obtain a metric for any implementation is ==computeMetric==. This method always return a ==Float==, even for cases where a formula has no defined behavior. In this case, we explicitly state this in the method comment.
+The method to obtain the ""resulting metric"" for any metric implementation is ==computeMetric==. This method always returns a ==Float==, even for cases where a formula has no defined behavior. In this case, we explicitly state the situation in the method comment.
 
-All clustering metrics implements ==clusterA== and ==clusterB== accessors (getters and setters) with collections as inputs to be compared. It is not enforced clusterA to represent the ground truth, however it is common practice to configure the collection with "truth labels" as the first parameter, and the second collection as the collection with predictions.
+All clustering metrics implements ==clusterA== and ==clusterB== accessors (getters and setters) with collections as inputs to be compared. It is not enforced clusterA to represent the ''ground truth'', however it is common practice to configure the collection with "truth labels" as the first parameter, and the second collection to be interpreted as the collection with predictions (predictions are the result of your clustering algorithm).
 
 !!! Rand Index
 @sec:MLMetrics-RandIndex
@@ -351,9 +509,9 @@ We will see below there is generalized version of the original formula. The form
 !!!! Algorithm Description
 @sec:MLMetrics-JaccardDescription
 
-It is important to remark there are actually two versions of the Jaccard similarity index: A set-based version, and a vector-based (weighted) version. Both formulas are equivalent, but the vector-based version is just another method which was later implemented as a generalized version of the set-based one. The set-based version accept as input ''instance sets'' such as flat Collections of different sizes, while the vector-based version has the requirement of both input collections to have the same size. Also, under the vector-based variation, the elements of the union of both collections are considered as features, and a binary-vector is built where 0 means absence and 1 means presence of a feature, for both the numerator (with the minimum 1 or 0 at each feature) and denominator (with the maximum 1 or 0 at each feature). Finally both numerator and denominator are summed.
+It is important to remark there are actually two versions of the Jaccard similarity index: A set-based version, and a vector-based (weighted) version. Both formulas are equivalent, but the vector-based version is just another method which was later implemented as a generalized version of the set-based one. The set-based version accept as input ''instance sets'' such as flat Collections of different sizes, while the vector-based version has the requirement of both input collections to have the same size. Also, under the weighted/vector-based variation, the elements of the union of both collections are considered as features, and a binary-vector is built where 0 means absence and 1 means presence of a feature, for both the numerator (with the minimum 1 or 0 at each feature) and denominator (with the maximum 1 or 0 at each feature). Finally both numerator and denominator are summed.
 
-To better understand the difference between the set-based and vector-based versions, let's consider  as inputs:
+To better understand the difference between the set-based and vector-based versions, let's consider the set version first with inputs:
 
 [[[
 	cluster1 := { 'Plato' . 'Foucault' . 'Kant' }.
@@ -368,7 +526,7 @@ We should note here we do not have the cluster assignment information for any ph
 \[ J(cluster1,cluster2) = {3 \over 5 } = 0.6 \]
 }}}
 
-Under the vector-based version, we "binarize" the features marking for presence/absence. And the sum of each vector divided give us the same result as expected:
+Under the vector-based version, we "binarize" the features marking for presence/absence at each element position of the collection. And the sum of each vector divided give us the same result as expected:
 
 [[[
 	cluster1 := { 1 . 1 . 1 . 0 . 0 }.
@@ -410,33 +568,12 @@ NMI is a specialization of another metric called Mutual Information (MI), taking
 \[ \text{NMI}(U, V) = \frac{\text{MI}(U, V)}{\text{mean}(H(U), H(V))} \]
 }}}
 
-!!! Mutual Information (MI)
-@sec:MLMetrics-MI
-
-
-!!!! Formal Definition
-@sec:MLMetrics-MIDefinition
-
-The MI formula is defined by:
-
-{{{ 
-\[ \text{MI}(U, V) = \sum_{i=1}^{|U|} \sum_{j=1}^{|V|} \frac{|U_i \cap V_j|}{N}\log\left(\frac{N|U_i \cap V_j|}{|U_i||V_j|}\right) \]
-}}}
-
 !!! Silhouette Coeffecient
 @chap:MLMetrics-Silhouette
 
-''Work in progress''
+The Silhouette Coeffecient (also known as the Silhouette Index) is a Float value between -1.0 and 1.0 and represents a measure of how well observations are separated from neighboring clusters. A high value means that the object is well suited to its own cluster, and poorly suited to the adjacent cluster. It is useful when ground-truth labels are not known, which makes this metric an intrinsic evaluation type. Advantages of the Silhouette Index are that can used with any clustering algorithm, and may provide a concise graphical representation of how well each object has been categorized.
 
-The Silhouette Coeffecient (also known as the Silhouette Index) is a Float value between -1.0 and 1.0 and represents a measure of how well observations are separated from neighboring clusters. A high value means that the object is well suited to its own cluster, and poorly suited to the adjacent cluster. It is useful when ground-truth labels are not known, it is possible to use the model itself to determine accuracy confirmation within data clusters. This approach may provide a concise graphical representation of how well each object has been categorized.
-
-The method is based on the average distance from one given object to those of the same cluster as that object, compared with the similar average distance from the best alternative cluster.
-
-- First calculate the average distance within the cluster.
-- Each cluster member has its own average distance from all other members of the same cluster.
-- The average of these averages is the dissimilarity score for the cluster.
-
-!!!! Formal Definition of Silhouette Coeffecient
+!!!! Formal Definition
 @sec:MLMetrics-SilhouetteDefinition
 
 The Silhouette Coeffecient, for a single sample, is defined by:
@@ -445,11 +582,30 @@ The Silhouette Coeffecient, for a single sample, is defined by:
 \[ s = \frac{b - a}{max(a, b)} \]
 }}}
 
+where:
+
+- {{{$a$}}} (also called the ""cluster cohesion"") represents the average intra-cluster distance, i.e. the distance between a data point and all other points in the same cluster.
+- {{{$b$}}} (also called the ""cluster separation"") represents the average inter-cluster distance, i.e. the distance between a data point and all other points in the cluster nearest to the data point's cluster.
+
+!!!! Algorithm Description
+@sec:MLMetrics-SilhouetteDescription
+
+The method is based on the average distance from one given object to those of the same cluster as that object, compared with the similar average distance from the best alternative cluster. Roughly, the steps involved in the algorithm are:
+
+- Calculate the average distance within the cluster.
+- Each cluster member has its own average distance from all other members of the same cluster.
+- The average of these averages is the dissimilarity score for the cluster.
+
+'''Work in Progress'
+
+
 !!! Bibliography
 
 Davies, D., Bouldin, D.: A cluster separation measure. IEEE PAMI 1(2), 224–227 (1979)
 
 Dice, Lee R. (1945). "Measures of the Amount of Ecologic Association Between Species". Ecology. 26 (3): 297–302. doi:10.2307/1932409. JSTOR 1932409.
+
+R. A. Fisher (1936). "The use of multiple measurements in taxonomic problems". Annals of Eugenics. 7 (2): 179–188. doi:10.1111/j.1469-1809.1936.tb02137.x. hdl:2440/15227
 
 Fowlkes, E. B.; Mallows, C. L. (1 September 1983). "A Method for Comparing Two Hierarchical Clusterings". Journal of the American Statistical Association 78 (383): 553.
 
