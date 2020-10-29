@@ -27,6 +27,8 @@ Another distinguishing characteristic is when the algorithm allows clusters to b
 - Hierachical Clustering: Answer <true> to #isHierarchical.
 - Partitional Clustering: Answer <true> to #isPartitional.
 
+For example to get which type of nesting implements the k-mean algorithm:
+
 [[[
 MLKMeans isPartitional.
 ]]]
@@ -81,8 +83,10 @@ We can quickly inspect the dataset contents by evaluating:
 Dataset loadIris.
 ]]]
 
-- The dataset has 3 species of flowers: Setosa, Versicolor, and Virginica
-- The dataset has 5 features: ''PetalLength'', ''PetalWidth'', ''SepalLength'', ''SepalWidth'', and ''Species''. The sepal and petal parts measures are expressed in centimeters and, to have a visual reference, they could be seen with the folllowing picture:
+We can observe that the dataset has:
+
+- 3 species of flowers: ''Setosa'', ''Versicolor'', and ''Virginica''.
+- 5 features: ''PetalLength'', ''PetalWidth'', ''SepalLength'', ''SepalWidth'', and ''Species''. The sepal and petal parts measures are expressed in centimeters and, as reference, they could be seen with the folllowing picture:
 
 +Difference between Sepal and Petal features>file://figures/451px-Petal-sepal.png|width=40|label=figPetalSepal+
 
@@ -98,17 +102,70 @@ Dataset loadIris.
 We can query here the first observations to get a overview of the dataset:
 
 [[[
-self head 
+Datasets loadIris head.
 ]]]
 
-By quickly observing the data, we can notice we are conceeding multiple assumptions here: The whole dataset comes from a single experiment under almost perfect laboratory conditions, where variables are in the same measure (in this case centimeters), hence comparable, and even published in a peer-reviewed scientific journal! Real scenarios are not so kind. Variables could have different types and importance, it could contains missing values everywhere, have an undefined or unparseable format, probably should be combined, scaled and scored, added, just to name a few.
++Inspector of the first flowers in the Iris Dataset>file://figures/Iris_DataFrame_1.png|width=100|label=figDFIrisInspect+
 
-For now we can get a first challenge here, namely interpretation. Which variables are the important ones in this dataset to get a predictive model? All of them? It would be nice to plot these observations with Roassal, but we have 5 variables and just only 2 or 3 dimensions we can "easily" plot. Let's take the x dimension to be the "PetalLength" and the y dimension to be "PetalWidth".
+%{{{
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=\textwidth]{Chapters/Clustering/figures/Iris_DataFrame_1}
+%\caption{Inspector of the first flowers in the Iris Dataset}
+%\label{figDFIrisInspect}
+%\end{figure}
+%}}}
+
+By quickly checking the data, we can notice we are conceeding multiple assumptions here: The whole dataset comes from a single experiment under almost perfect laboratory conditions, where variables are in the same measure (in this case centimeters), hence comparable, and even published in a peer-reviewed scientific journal! Real scenarios are not so kind. Variables could have different types and importance, it could contains missing values everywhere, have an undefined or unparseable format, probably should be combined, scaled and scored, added, just to name a few.
+
+For now we can get a first challenge here, namely interpretation. Which variables are the important ones in this dataset to get a predictive model? All of them? It would be nice to plot these observations with the Roassal visualization engine, but we have 5 variables and just only 2 or 3 dimensions we can "easily" plot. We will see two dimensions in the next example. Let's take the x dimension to be the "PetalLength" and the y dimension to be "PetalWidth":
 
 [[[
-RTGrapher
+|  g d df lb |
+
+df := Datasets loadIris.
+g := RTGrapher new.
+d := RTData new.
+" Configure the colors of the data points "
+d dotShape 
+	if: [ :row | row last = 'virginica' ] fillColor: Color blue;
+	if: [ :row | row last = 'versicolor' ] fillColor: Color green;
+	if: [ :row | row last = 'setosa' ] fillColor: Color red.
+d points: (df asArrayOfRows collect: #asArray).
+" The third column is the Petal Length feature "
+d x: #third.
+" The fourth column is the Petal Width feature "
+d y: #fourth.
+g add: d.
+" Setup the axis labels and color "
+g axisY
+  title: 'petal length (cm)';
+  color: Color black.
+g axisX
+  color: Color black;
+  title: 'petal width (cm)'.
+" Create a small description of colors represented "
+lb := RTLegendBuilder new.
+lb view: g view; right.
+lb addText: 'Iris Dataset'.
+lb addColor: Color blue text: 'Virginica'.
+lb addColor: Color green text: 'Versicolor'.
+lb addColor: Color red text: 'Setosa'.
+lb build.
+g open
 ]]]
 
+
++Plot Petal Length versus Petal Width features>file://figures/petal_length-vs-petal_width.png|width=95|label=figPlotIris+
+
+%{{{
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=\textwidth]{Chapters/Clustering/figures/petal_length-vs-petal_width}
+%\caption{Plot Petal Length versus Petal Width in Iris Dataset}
+%\label{figPlotIris}
+%\end{figure}
+%}}}
 
 ''Work in Progress''
 
