@@ -26,6 +26,7 @@ xargs tlmgr install <<DEPS
     polyglossia
     ragged2e
     relsize
+    slantsc
     tcolorbox
     textcase
     tools
@@ -33,4 +34,5 @@ xargs tlmgr install <<DEPS
     ulem
     varwidth
     xcolor
+    xtab
 DEPS
