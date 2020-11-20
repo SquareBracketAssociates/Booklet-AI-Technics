@@ -1,34 +1,22 @@
 !! Basics
 @sec:MLClustering-Basics
 
-<<<<<<< HEAD
 Real world data is mostly complex. To make sense of complex data requires approaches to shape it. While trying to make sense of it we can discover patterns to understand our data better. One of the well-known methods for such goal is clustering. A cluster is a set of objects that share similar features, while clustering is called the technique that divides the observations (called ''data points'' in the Machine Learning vocabulary) into groups to get an insight into this data in an ""unsupervised way"". Clustering is also viewed as automatic labeling a dataset, by discovering the groups in it. You can use clustering methods, for example, to identify communities in social networks, group music for different themes, perform customer segmentation, implement a recommendation system, among many other use cases.
 
 In a more object-oriented sense, a clustering algorithm is an object which is able to group data points, and implements multiple features such as exclusiveness, nesting, completeness, and others such as metrics factors. We will discuss in the next sections its properties, although our main focus will be in how to apply clustering techniques in such way that you could translate it into your own experiments. We start by showing a high-level description of the API, and then move to experiment with a toy dataset so you can get an overview of some available methods to play with. 
 
 In the next chapter you could read how to validate your own Machine Learning clusterings with the help of the MLMetrics package.
-=======
-Real world data is mostly complex. To make sense of data requires approaches to shape it. While doing this we can discover patterns to understand data better, and one of the well-known methods is clustering. A cluster is a set of objects that share similar features, while clustering is called the technique that divides the observations (called ''data points'' in the Machine Learning vocabulary) into groups to get an insight into this data in an ""unsupervised way"". Clustering is also viewed as automatic labeling a dataset, by discovering the groups in it.
-
-In a more object-oriented sense, a clustering algorithm can be seen as a Strategy object with multiple features such as exclusiveness, nesting, completeness, and others besides the space and efficency factors.
-
-''Work in progress''
->>>>>>> master
 
 !! API
 @sec:MLClustering-APIIntroduction
 
-<<<<<<< HEAD
 The following section will describe a few properties of the clustering algorithms. They are not mandatory to learn or use if the goal is to build a model to make predictions, but they are a good basis for understanding which clustering technique to use in case it is not self-evident for your problem at hand. Sometimes multiple techniques could be tried before reaching to a definitive conclusion. It is important to understand the process is highly-dependent of the context, and the properties of the dataset you want to cluster.
 
-=======
->>>>>>> master
 !!! Exclusiveness
 @sec:MLClustering-Exclusiveness
 
 A clustering algorithm could consider its observations to be:
 
-<<<<<<< HEAD
 - ""Exclusive"": Each observation can only belongs to one cluster. Answers <true> to #isExclusive.
 - ""Overlapping"": An observation could be grouped in multiple clusters. Answer <true> to #isOverlapping.
 - ""Fuzzy"": Maps each observation to its own cluster. Answer <true> to #isFuzzy.
@@ -38,26 +26,14 @@ To get which kind of exclusiveness implements the k-mean algorithm:
 [[[
 MLKMeans isExclusive.
 ]]]
-=======
-- Exclusive: Each observation can only belongs to one cluster. Answers <true> to #isExclusive.
-- Overlapping: An observation could be grouped in multiple clusters. Answer <true> to #isOverlapping.
-- Fuzzy: Maps each observation to its own cluster. Answer <true> to #isFuzzy.
->>>>>>> master
 
 !!! Nesting
 @sec:MLClustering-Nesting
 
-<<<<<<< HEAD
 Another distinguishing characteristic is when the algorithm allows clusters to be nested. These types of algorithms are said to implement ""Hierarchical Clustering"" (examples are the algorithms DBSCAN, OPTICS and Ward). On the other side, when nesting is not allowed during cluster formation, it is ""Partitional Clustering"" (algorithms k-means, k-medoids, k-medians, mean-shift, etc). We can obtain which type of nesting implements a class using the following methods:
 
 - ""Hierachical Clustering"": Answer <true> to #isHierarchical.
 - ""Partitional Clustering"": Answer <true> to #isPartitional.
-=======
-Another distinguishing characteristic is when the algorithm allows clusters to be nested. These types of algorithms are said to implement ""Hierarchical Clustering"" (examples are DBSCAN, OPTICS and Ward). On the other side, when nesting is not allowed during cluster formation, it is ""Partitional Clustering"" (k-means, k-medoids, k-medians, mean-shift, etc). We can obtain which type of nesting implements a class using the following methods:
-
-- Hierachical Clustering: Answer <true> to #isHierarchical.
-- Partitional Clustering: Answer <true> to #isPartitional.
->>>>>>> master
 
 For example to get which type of nesting implements the k-mean algorithm:
 
@@ -70,7 +46,6 @@ MLKMeans isPartitional.
 
 It applies to observations which could be left without belonging to any cluster. To query which kind is implememented by a class, we have two methods:
 
-<<<<<<< HEAD
 - ""Complete"": All observations are assigned to a cluster. Answer ''<true>'' to #isComplete.
 - ""Partial"": There are observations which could have no cluster. Answer ''<true>'' to #isPartial.
 
@@ -169,41 +144,11 @@ The k-means formulation builds ""non-overlapping"" groups by randomly selecting 
 %\end{figure}
 %}}}
 
-=======
-- Complete: All observations are assigned to a cluster. Answer ''<true>'' to #isComplete.
-- Partial: There are observations which could have no cluster. Answer ''<true>'' to #isPartial.
-
-!! k-means Clustering
-@sec:MLMetrics-KMeansIntroduction
-
-k-means is a clustering prediction method from an unlabeled dataset, which you can use for example, to identify communities in social networks, to group music for different themes, to perform customer segmentation, to implement a recommendation system, and many other areas. It is very popular due to being fast, but as a drawback, it requires a number of clusters (k) to be specified beforehand. In this regard, an inappropriate choice for K may result in a poor clustering performance. 
-
-
-!!! Algorithm Description
-@sec:MLMetrics-KMeansDescription
-
-The k-means algorithm build non-overlapping groups by randomly selecting K prototypes from the input observations. These prototypes are selected by the algorithm itself as centroids to represent each cluster.
-
-Figure 1.
-
-As next step, it calculates the distance (several distance algorithms are available) between the data points and all centroids, assigning observations (data points) to a single cluster, represented by its closest prototype. The key part of k-means algorithm is to "move" each centroid to the average location of its assigned observations. The move causes some of the initial assignments not to be closer to its centroid anymore, and then assignments should be updated.
-
-Figure 2.
-
-
-The updating cluster centers and reassigning observations continues till the cluster centers stop changing.
-
-''Work in progress''
->>>>>>> master
 
 !!! The Iris Dataset
 @sec:MLClustering-Iris
 
-<<<<<<< HEAD
 Our final goal in this section is to build a ""clustering model"" to make predictions. We will work with the famous ""Iris-Flowers"" plants dataset, published by the statistician and biologist Ronald Fisher in 1936. You will see it named as the Edgar Anderson's Iris Flowers, because it was the botanic who collected the flowers. It consists of 150 flowers, carefully measured, and divided into 3 species groups of 50 flowers each. We advise to not underestimate the features of this dataset, as it is used as a toy data example as basis for understanding how clustering works. 
-=======
-Our final goal in this section is to build a ""clustering model"" to make predictions. We will work with the famous ""Iris-Flowers"" plants dataset, published by the statistician and biologist Ronald Fisher in 1936. It consists of 150 flowers, carefully measured, and divided into 3 species groups of 50 flowers each. We advise to not underestimate the features of this dataset, as it is used as a toy data example as basis for understanding how clustering works. 
->>>>>>> master
 
 The Iris-Flowers dataset is available in the Datasets package which can be loaded with the expression:
 
@@ -220,18 +165,11 @@ We can quickly inspect the dataset contents by evaluating:
 Dataset loadIris.
 ]]]
 
-<<<<<<< HEAD
 We can observe that the dataset:
 
 - Each row represents a flower.
 - It has 3 species of flowers: ''Setosa'', ''Versicolor'', and ''Virginica''.
 - It has 5 features: ''PetalLength'', ''PetalWidth'', ''SepalLength'', ''SepalWidth'', and ''Species''. The sepal and petal parts measures are expressed in centimeters and, as reference, they could be seen with the folllowing picture:
-=======
-We can observe that the dataset has:
-
-- 3 species of flowers: ''Setosa'', ''Versicolor'', and ''Virginica''.
-- 5 features: ''PetalLength'', ''PetalWidth'', ''SepalLength'', ''SepalWidth'', and ''Species''. The sepal and petal parts measures are expressed in centimeters and, as reference, they could be seen with the folllowing picture:
->>>>>>> master
 
 +Difference between Sepal and Petal features>file://figures/451px-Petal-sepal.png|width=40|label=figPetalSepal+
 
@@ -261,7 +199,6 @@ Datasets loadIris head.
 %\end{figure}
 %}}}
 
-<<<<<<< HEAD
 By quickly checking the data, we can see we are conceeding multiple assumptions here: The whole dataset comes from a single experiment under almost perfect laboratory conditions, where variables are in the same measure (in this case centimeters), hence comparable, and even published in a peer-reviewed scientific journal! Real scenarios are not so kind. Variables could have different types and importance, it could contains missing values everywhere, have an undefined or unparseable format, probably should be combined, scaled and scored, just to name a few data preprocessing steps.
 
 For now we can get a first challenge here, namely interpretation. Which variables are the important ones in this dataset to get a predictive model? All of them? It would be nice to plot these observations with the Roassal visualization engine, but we have four real-value variables and just only 2 or 3 dimensions we can "easily" plot. We will see two dimensions in the next example. In this case a good idea is to drop the labels column, and set all data points with the same color, so we can get a feel of a real-life dataset. Let's take the y dimension to be the "SepalLength" and the x dimension to be "SepalWidth":
@@ -340,43 +277,6 @@ g axisY
 g axisX
   title: (df columnNames perform: featureBSelector);
   color: Color black.
-=======
-By quickly checking the data, we can notice we are conceeding multiple assumptions here: The whole dataset comes from a single experiment under almost perfect laboratory conditions, where variables are in the same measure (in this case centimeters), hence comparable, and even published in a peer-reviewed scientific journal! Real scenarios are not so kind. Variables could have different types and importance, it could contains missing values everywhere, have an undefined or unparseable format, probably should be combined, scaled and scored, added, just to name a few.
-
-For now we can get a first challenge here, namely interpretation. Which variables are the important ones in this dataset to get a predictive model? All of them? It would be nice to plot these observations with the Roassal visualization engine, but we have 5 variables and just only 2 or 3 dimensions we can "easily" plot. We will see two dimensions in the next example. Let's take the x dimension to be the "PetalLength" and the y dimension to be "PetalWidth":
-
-[[[
-|  g d df lb |
-
-df := Datasets loadIris.
-g := RTGrapher new.
-d := RTData new.
-" Configure the colors of the data points "
-d dotShape 
-	if: [ :row | row last = 'virginica' ] fillColor: Color blue;
-	if: [ :row | row last = 'versicolor' ] fillColor: Color green;
-	if: [ :row | row last = 'setosa' ] fillColor: Color red.
-d points: (df asArrayOfRows collect: #asArray).
-" The third column is the Petal Length feature "
-d x: #third.
-" The fourth column is the Petal Width feature "
-d y: #fourth.
-g add: d.
-" Setup the axis labels and color "
-g axisY
-  title: 'petal length (cm)';
-  color: Color black.
-g axisX
-  color: Color black;
-  title: 'petal width (cm)'.
-" Create a small description of colors represented "
-lb := RTLegendBuilder new.
-lb view: g view; right.
-lb addText: 'Iris Dataset'.
-lb addColor: Color blue text: 'Virginica'.
-lb addColor: Color green text: 'Versicolor'.
-lb addColor: Color red text: 'Setosa'.
->>>>>>> master
 lb build.
 g open
 ]]]
@@ -393,7 +293,6 @@ g open
 %\end{figure}
 %}}}
 
-<<<<<<< HEAD
 We can see that the first two features, "Sepal Length" versus "Sepal Width", does not seem to be good predictors for cluster recognition. We could try combinations of different features by changing ''featureASelector'' and ''featureBSelector'' to select other features (#second versus #third, #third versys #fourth, etc.) however there is a useful plot for these cases, the scatter plot matrix:
 
 [[[
@@ -429,60 +328,6 @@ We have seen what is known as the LLoyd's algorithm for k-means, published in 19
 - A recent algorithm (from Arthur and Vassilvitskii) called k-means++
 
 ''Work in progress''
-
-
-!! Hierarchical Clustering
-@sec:MLClustering-HierarchicalClusteringIntroduction
-
-
-
-=======
-''Work in Progress''
-
-!!! Simple Example
-@sec:MLClustering-KMeansSimpleExample
-
-!!!! Create the Model
-@sec:MLClustering-KMeansCreateModel
-
-Create a clustering using:
-
-[[[
-| df kmeans |
-df := Datasets loadIris.
-kmeans := KMeans numberOfClusters: 3.
-]]]
-
-The selection of a "good value" of K usually requires a good understanding of the domain model, for example one may choose K = 3 under the knowledge of the domain model has three kinds of diagnostics (whatever they are), or K = 2 when there are two types of insurances. You can easily run KMeans with several values of K, but at some point the refinement makes no difference to the final predictions and comparing results between different values of K is time-consuming.
-
-Of course we already know there are 3 real clusters but let us pretend, for the sake of learning k-means, to ignore the "species" column. We will see later there are methods to obtain a good number of clusters, known as the "elbow method".
-
-We have a kmeans object, which does nothing but get instantiated. To start building the kmeans cluster model, it should be "fitted" or " trained". To do it we select the features we would like to use to predict our target variable.
-
-[[[
-kmeans fit: ...
-]]] 
-
-The iteration proceeds as follows:
-
-- Place k (3) random points into the data space. We call them "centroids".
-- Assign each observation to its nearest centroid, in our case, A B C are assigned to the centroid 1, and the C, D are assigned to the centroid 2.
-- Calculates the distance from the centroid to observation points. This is normally done using the Euclidean method.
-
-''Work in progress''
-
-!!!! Make Predictions
-@sec:MLClustering-KMeansMakePredictions
-
-
-''Work in progress''
-
-!!! Variations of k-means
-@sec:MLClustering-KMeansVariations
-
-''Work in progress''
->>>>>>> master
-
 
 !! Evaluating clustering performance
 
