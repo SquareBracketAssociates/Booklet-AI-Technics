@@ -1,4 +1,4 @@
-!! Basics
+!! Partitional Clustering
 @sec:MLClustering-Basics
 
 Real world data is mostly complex. To make sense of complex data requires approaches to shape it. While trying to make sense of it we can discover patterns to understand our data better. One of the well-known methods for such goal is clustering. A cluster is a set of objects that share similar features, while clustering is called the technique that divides the observations (called ''data points'' in the Machine Learning vocabulary) into groups to get an insight into this data in an ""unsupervised way"". Clustering is also viewed as automatic labeling a dataset, by discovering the groups in it. You can use clustering methods, for example, to identify communities in social networks, group music for different themes, perform customer segmentation, implement a recommendation system, among many other use cases.
@@ -7,12 +7,12 @@ In a more object-oriented sense, a clustering algorithm is an object which is ab
 
 In the next chapter you could read how to validate your own Machine Learning clusterings with the help of the MLMetrics package.
 
-!! API
+!!! API
 @sec:MLClustering-APIIntroduction
 
 The following section will describe a few properties of the clustering algorithms. They are not mandatory to learn or use if the goal is to build a model to make predictions, but they are a good basis for understanding which clustering technique to use in case it is not self-evident for your problem at hand. Sometimes multiple techniques could be tried before reaching to a definitive conclusion. It is important to understand the process is highly-dependent of the context, and the properties of the dataset you want to cluster.
 
-!!! Exclusiveness
+!!!! Exclusiveness
 @sec:MLClustering-Exclusiveness
 
 A clustering algorithm could consider its observations to be:
@@ -27,7 +27,7 @@ To get which kind of exclusiveness implements the k-mean algorithm:
 MLKMeans isExclusive.
 ]]]
 
-!!! Nesting
+!!!! Nesting
 @sec:MLClustering-Nesting
 
 Another distinguishing characteristic is when the algorithm allows clusters to be nested. These types of algorithms are said to implement ""Hierarchical Clustering"" (examples are the algorithms DBSCAN, OPTICS and Ward). On the other side, when nesting is not allowed during cluster formation, it is ""Partitional Clustering"" (algorithms k-means, k-medoids, k-medians, mean-shift, etc). We can obtain which type of nesting implements a class using the following methods:
@@ -41,7 +41,7 @@ For example to get which type of nesting implements the k-mean algorithm:
 MLKMeans isPartitional.
 ]]]
 
-!!! Completeness
+!!!! Completeness
 @sec:MLClustering-Completeness
 
 It applies to observations which could be left without belonging to any cluster. To query which kind is implememented by a class, we have two methods:
@@ -49,14 +49,14 @@ It applies to observations which could be left without belonging to any cluster.
 - ""Complete"": All observations are assigned to a cluster. Answer ''<true>'' to #isComplete.
 - ""Partial"": There are observations which could have no cluster. Answer ''<true>'' to #isPartial.
 
-!! k-means Clustering
+!!! k-means Clustering
 @sec:MLClustering-KMeansIntroduction
 
 k-means is a clustering prediction method from an unlabeled dataset. It is very popular due to being fast, but as a drawback, it requires a number of clusters (k) to be specified beforehand. In this regard, an inappropriate choice for K may result in a poor clustering performance. 
 
 Another requirement of k-means is that variables to be analysed must be normalized (standardized). The procedure to ensure the variables are normalized is to scale them so the mean is zero and standard deviation (the sum of the covariance) is one. Such standardized real numbers are also known as z-scores. Normalization is a common step while doing exploratory analysis, as part of a data wrangling stage prior to applying any machine learning algorithm.
 
-!!! Algorithm Description
+!!!! Algorithm Description
 @sec:MLClustering-KMeansDescription
 
 The k-means formulation builds ""non-overlapping"" groups by randomly selecting K prototypes from the input observations. These prototypes are selected by the algorithm itself as centroids to represent each cluster. We will work with now with a simplification to visualize how the iteration proceeds:
@@ -145,7 +145,7 @@ The k-means formulation builds ""non-overlapping"" groups by randomly selecting 
 %}}}
 
 
-!!! The Iris Dataset
+!!!! The Iris Dataset
 @sec:MLClustering-Iris
 
 Our final goal in this section is to build a ""clustering model"" to make predictions. We will work with the famous ""Iris-Flowers"" plants dataset, published by the statistician and biologist Ronald Fisher in 1936. You will see it named as the Edgar Anderson's Iris Flowers, because it was the botanic who collected the flowers. It consists of 150 flowers, carefully measured, and divided into 3 species groups of 50 flowers each. We advise to not underestimate the features of this dataset, as it is used as a toy data example as basis for understanding how clustering works. 
@@ -210,11 +210,8 @@ MLR2ScatterPlotViz
 ]]]
 
 
-!!! Simple Example
+!!!! Simple Example
 @sec:MLClustering-KMeansSimpleExample
-
-!!!! Create the Model
-@sec:MLClustering-KMeansCreateModel
 
 Create a clustering using:
 
@@ -244,7 +241,7 @@ kmeans maxIterations: 20.
 
 Now that we predicted a value for K, let's get back to the Roassal visualization:
 
-
+''Work in progress: Adapt the following script to use MLViz''
 [[[
 |  g d df lb featureASelector featureBSelector |
 
@@ -311,9 +308,6 @@ MLR2ScatterPlotViz plot: Datasets loadIris.
 %}}}
 
 
-!!!! Make Predictions
-@sec:MLClustering-KMeansMakePredictions
-
 How to use the prediction model?
 
 ''Work in progress''
@@ -330,14 +324,7 @@ We have seen what is known as the LLoyd's algorithm for k-means, published in 19
 ''Work in progress''
 
 
-!! Hierarchical Clustering
-@sec:MLClustering-HierarchicalClusteringIntroduction
-
-
-
-
-
-!! Evaluating clustering performance
+!!! Evaluating clustering performance
 
 Every clustering algorithm has its own advantages and drawbacks. Validation of cluster analysis is an important aspect of measuring how well multiple clustering methods performed on a data set. As clustering is more about discovering than an exact prediction method, several indices can be used to determine if the right number of clusters were discovered. This is what the K in clustering algorithms (k-means, k-medians, kNN) is about after all.
 
@@ -347,7 +334,7 @@ Roughly, there are two major strategies to assess clustering quality:
 
 ""Internal cluster evaluation"": Which does not use information outside the dataset, like human annotations, and involves summarization into a single quality score. In many applications ground truth labels are not available (consider for example streaming applications). Examples of this type of metric are the ''Root-mean-square standard deviation'' or ''RMSSTD/RMSD/RMSE'' and the ''R-squared'' or ''RS'' (Sharma, 1996), the ''Silhouette Coeffecient'' (Rousseeuw, 1987), the ''Davies-Bouldin Index'' or ''DB'' (Theodoridis and Koutroubas, 1999).
 
-!!! Installation
+!!!! Installation
 @chap:MLMetrics-Installation
 
 All algorithms described in this chapter are part of the MLMetrics project which can be found at *https://github.com/pharo-ai/MLMetrics*. To install MLMetrics, go to the Playground in your Pharo image and execute the following Metacello request (select it and press Do-it button or Ctrl+D):
@@ -359,7 +346,7 @@ Metacello new
   load.
 ]]]
 
-!!! API Definition
+!!!! API Definition
 @sec:MLMetrics-APIDefinition
 
 We will introduce here general conventions and practices understood by all metrics. These methods are considered stable and supported for all metrics implemented in the ==MLMetrics== package. 
@@ -390,12 +377,12 @@ The method to obtain the ""resulting metric"" for any metric implementation is =
 
 All clustering metrics implements ==clusterA== and ==clusterB== accessors (getters and setters) with collections as inputs to be compared. It is not enforced clusterA to represent the ''ground truth'', however it is common practice to configure the collection with "truth labels" as the first parameter, and the second collection to be interpreted as the collection with predictions (predictions are the result of your clustering algorithm).
 
-!!! Rand Index
+!!!! Rand Index
 @sec:MLMetrics-RandIndex
 
 A "Rand Index" (RI) is a Float between 0.0 and 1.0 representing the number of agreements between two data clusterings, presumably from two different methods on the same data set. You may use the Rand Index score to compare how two partitions (clustering results) agreed. A value of 1.0 means that clusterings between two methods were the same, and these partitions agree perfectly, and 0.0 means that the two data clusterings disagree on any pair of points.
 
-!!!! Formal Definition
+!!!!! Formal Definition
 @sec:MLMetrics-Definition
 
 Let {{{$C_1$}}} and {{{$C_2$}}} be two sets, the ''Rand Index'' (R) is defined by the formula:
@@ -426,7 +413,7 @@ In such case, it is common to refer the first set to have "true clusterings" and
 |FN | Pairs of elements which belongs to class positive and we clustered it as negative
 |TN | Pairs of elements which belongs to class negative and we clustered it as negative
 
-!!!! Algorithm Description
+!!!!! Algorithm Description
 @sec:MLMetrics-RIAlgorithmDescription
 
 The algorithm is based on counting pair of elements from both sets. It builds every posible unordered pair of elements in each cluster result. Which pairs? The answer is the binomial coefficient and you can easily print this combination for any Collection by evaluating:
@@ -440,7 +427,7 @@ Transcript open.
 
 Then it counts the number of pairs, ""in term of indices"", which are in both clustering methods, and the number of pairs which are in different clusters. We will see this in detail in a following partial agreement example.
 
-!!!! Simple Example
+!!!!! Simple Example
 @sec:MLMetrics-RISimpleExample
 
 We begin considering the most basic cases, to get an overview of the API. We can obtain the Rand index in Pharo using the ==MLRandIndex== class. In this case we will be passing two clusterings (Collections) of 5 assignments each one. Notice both input collections must have the same number of assignments, and each one could take a value of 1, 2 or 3. Conceptually, each assignment represents a pair, but this will be more clear in a follow-up example. For now let's check two exact clusterings (both sets has the same assignments):
@@ -469,7 +456,7 @@ MLRandIndex
 
 yields the same result as above of 0.0.
 
-!!!! Partial Agreement Example
+!!!!! Partial Agreement Example
 @sec:MLMetrics-RIUserExample
 
 Imagine your application has queried five famous philosophers. One clustering method (such as k-means, k-medians, DBSCAN, or other) discovered three clusters (say 1, 2 and 3), and these are stored in {{{$clusterResult1$}}}. Another method discovered also three clusters, storing them to {{{$clusterResult2$}}} respectively. Notice that, in common tasks, one of these clusterings may be considered the reference cluster, for example, if one of them has a column which assigned the true labels. 
@@ -550,7 +537,7 @@ In practice, the RI do not use the full range of possible values, and most of th
 
 This is what we will see in the next section.
 
-!!! Adjusted Rand Index
+!!!! Adjusted Rand Index
 @sec:MLMetrics-ArjustedRandIndex
 
 The "Adjusted Rand Index" (ARI) is a Float between -1.0 and 1.0, where positive values mean that pairs in the known clusters and predicted clusters are similar, being 1.0 the perfect agreement and 0.0 a chance agreement, and negative values mean that pairs in the known clusters and predicted clusters are highly different. In short, the higher the value of ARI, the better the predictive ability of the evaluated clustering method. The "adjusted" part comes from the fact that a random result is scored as 0.
@@ -559,7 +546,7 @@ A word of caution: There are several measures of ARI, and actually the first two
 
 In this section we will describe first the {{{$ARI_h_a$}}} formula.
 
-!!!! Formal Definition
+!!!!! Formal Definition
 @sec:MLMetrics-ARIDefinition
 
 The {{{$ARI_h_a$}}} is defined by the equation:
@@ -586,7 +573,7 @@ where:
 - The denominator max(RI) represents the maximum possible RI, defined as the permutation sum of rows plus sum of columns divided then by 2: {{{ \[ Max(RI)=\frac{\sum{a_i\choose2}+\sum{b_j\choose2}}{2} \] }}}
 - E(RI) is the Expected Maximum Index, which is used to obtain a correction to the Rand Index: {{{ \[ E(RI)=\sum_{i}{n_{i.} \choose 2}\sum_{j}{n_{.j} \choose 2} / {n \choose 2} \] }}}
 
-!!!! Algorithm Description
+!!!!! Algorithm Description
 @sec:MLMetrics-ARIAlgorithmDescription
 
 The algorithm constructs a contingency table (also known as a cross tabulation) by counting the co-occurrences of both cluster results. In general terms, a contingency table is used to describe data which has more than one categorical variable. The rows represents categorical variables with the truth values, say from {{{$clusterResult1$}}}, and columns represents values from predictions, for example in {{{$clusterResult2$}}}. This kind of matrix usually includes an extra row and a right-most column representing the ""marginals"", used to asses statistical significance. Each cell in the matrix, i.e. each intersection, is the number of times an element appears in the combination of the particular row and column intersected. The right-bottom cell represents the total number of elements involved and is called the ""grand total"". 
@@ -635,12 +622,12 @@ We can observe 0.375 is much lower than the Rand Index result of 0.8, which is e
 - An index greater than 0.65 are considered moderate recovery 
 - An index less than 0.65 are considered poor recovery
 
-!!! Fowlkes–Mallows Index
+!!!! Fowlkes–Mallows Index
 @sec:MLMetrics-FMI
 
 The ''Fowlkes–Mallows Index'', also known as G-measure or FM, is a Float value between 0.0 and 1.0. It is an external evaluation method which is the geometric mean of precision and recall between two clusterings. The index can be used either for comparing flat and hierarchical clusterings.
 
-!!!! Formal Definition
+!!!!! Formal Definition
 @sec:MLMetrics-FMIDefinition
 
 The FM index is commonly defined using information extraction terms:
@@ -657,14 +644,14 @@ You may obtain the index in Pharo with the following expression:
 		clusterB: #(1 1 2 2 3) " clusterResult2 "
 ]]]
 
-!!! Jaccard Coefficient
+!!!! Jaccard Coefficient
 @sec:MLMetrics-Jaccard
 
 The Jaccard Index, also known as the Jaccard similarity coefficient, is a Float value between 0.0 and 1.0. It was originally designed as a general similarity measure between two non-empty sets, but it can be used as an evaluation measure of the degree of overlap between vectors. Intuitively, it can be thought as the size of the intersection divided by the size of the union. As usual, the closer to 1.0, the more similar the two datasets, the closer to 0.0 the more dissimilar. This metric should not be confused with the ""Jaccard distance"", which gives a ""dissimilarity"" measure.
 
 This metric is also known as "IoU" or Intersection over Union, specially in image detection contexts. 
 
-!!!! Formal Definition
+!!!!! Formal Definition
 @sec:MLMetrics-JaccardDefinition
 
 The formal definition for the set-based version is:
@@ -687,7 +674,7 @@ We will see below there is generalized version of the original formula. The form
 \[ J_\mathcal{W}(\mathbf{x}, \mathbf{y}) = \frac{\sum_i \min(x_i, y_i)}{\sum_i \max(x_i, y_i)} \]
 }}}
 
-!!!! Algorithm Description
+!!!!! Algorithm Description
 @sec:MLMetrics-JaccardDescription
 
 It is important to remark there are actually two versions of the Jaccard similarity index: A set-based version, and a vector-based (weighted) version. Both formulas are equivalent, but the vector-based version is just another method which was later implemented as a generalized version of the set-based one. The set-based version accept as input ''instance sets'' such as flat Collections of different sizes, while the vector-based version has the requirement of both input collections to have the same size. Also, under the weighted/vector-based variation, the elements of the union of both collections are considered as features, and a binary-vector is built where 0 means absence and 1 means presence of a feature, for both the numerator (with the minimum 1 or 0 at each feature) and denominator (with the maximum 1 or 0 at each feature). Finally both numerator and denominator are summed.
@@ -715,7 +702,7 @@ Under the vector-based version, we "binarize" the features marking for presence/
 	(cluster1 sum / cluster2 sum) asFloat. "0.6"
 ]]]
 
-!!!! Simple Example
+!!!!! Simple Example
 @sec:MLMetrics-JaccardSimpleExample
 
 It is clear now that if we have assignment information for each philosopher, we should use the weighted Jaccard version. In such case, the ==MLWeightedJaccardIndex== explicitly uses the vector-based version:
@@ -736,25 +723,25 @@ If we interpret clusterA and clusterB as instance sets (flat collections), we ca
 
 As can be seen, both versions are equivalent and it is the interpretation of the input data what could change.
 
-!!! Normalised Mutual Information (NMI)
+!!!! Normalised Mutual Information (NMI)
 @sec:MLMetrics-NMI
 
 The NMI is a Float number between 0.0 and 1.0 and represents a measure of 
 NMI is a specialization of another metric called Mutual Information (MI), taking into account , and similarly to the RI, both NMI and MI are not adjusted against chance.
 
-!!!! Formal Definition
+!!!!! Formal Definition
 @sec:MLMetrics-NMIDefinition
 
 {{{ 
 \[ \text{NMI}(U, V) = \frac{\text{MI}(U, V)}{\text{mean}(H(U), H(V))} \]
 }}}
 
-!!! Silhouette Coeffecient
+!!!! Silhouette Coeffecient
 @chap:MLMetrics-Silhouette
 
 The Silhouette Coeffecient (also known as the Silhouette Index) is a Float value between -1.0 and 1.0 and represents a measure of how well observations are separated from neighboring clusters. A high value means that the object is well suited to its own cluster, and poorly suited to the adjacent cluster. It is useful when ground-truth labels are not known, which makes this metric an intrinsic evaluation type. Advantages of the Silhouette Index are that can used with any clustering algorithm, and may provide a concise graphical representation of how well each object has been categorized.
 
-!!!! Formal Definition
+!!!!! Formal Definition
 @sec:MLMetrics-SilhouetteDefinition
 
 The Silhouette Coeffecient, for a single sample, is defined by:
@@ -768,7 +755,7 @@ where:
 - {{{$a$}}} (also called the ""cluster cohesion"") represents the average intra-cluster distance, i.e. the distance between a data point and all other points in the same cluster.
 - {{{$b$}}} (also called the ""cluster separation"") represents the average inter-cluster distance, i.e. the distance between a data point and all other points in the cluster nearest to the data point's cluster.
 
-!!!! Algorithm Description
+!!!!! Algorithm Description
 @sec:MLMetrics-SilhouetteDescription
 
 The method is based on the average distance from one given object to those of the same cluster as that object, compared with the similar average distance from the best alternative cluster. Roughly, the steps involved in the algorithm are:
@@ -780,7 +767,7 @@ The method is based on the average distance from one given object to those of th
 '''Work in Progress'
 
 
-!!! Bibliography
+!!!! Bibliography
 
 Davies, D., Bouldin, D.: A cluster separation measure. IEEE PAMI 1(2), 224–227 (1979)
 

@@ -8,5 +8,8 @@ ${inputFile:path=Chapters/NLP/TFIDF.pillar}$
 %! Data Mining
 ${inputFile:path=Chapters/DataMining/APriori.pillar}$
 
-! Clustering
-${inputFile:path=Chapters/Clustering/Clustering.pillar}$
+%! Partitional Clustering
+${inputFile:path=Chapters/Clustering/PartitionalClustering.pillar}$
+
+%! Hierarchical Clustering
+${inputFile:path=Chapters/Clustering/HierarchicalClustering.pillar}$

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-xargs tlmgr install <<DEPS
+xargs install <<DEPS
     collection-fontsrecommended
     collection-mathscience
 
@@ -9,6 +9,7 @@ xargs tlmgr install <<DEPS
     environ
     filehook
     fira
+	fontaxes
     fontspec
     footmisc
     gentium-tug
