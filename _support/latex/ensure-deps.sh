@@ -1,6 +1,6 @@
 #!/bin/bash
 
-xargs install <<DEPS
+xargs tlmgr install <<DEPS
     collection-fontsrecommended
     collection-mathscience
 
