@@ -36,5 +36,5 @@ xargs tlmgr install <<DEPS
     varwidth
     xcolor
     xtab
-	zref-abspage
+	zref
 DEPS
