@@ -1,11 +1,11 @@
 ${inputFile:path=Chapters/Introduction.pillar}$
 
-! Natural Language Processing
+%! Natural Language Processing
 
 ${inputFile:path=Chapters/NLP/NLP.pillar}$
 ${inputFile:path=Chapters/NLP/TFIDF.pillar}$
 
-! Data Mining
+%! Data Mining
 ${inputFile:path=Chapters/DataMining/APriori.pillar}$
 
 ! Clustering
