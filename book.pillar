@@ -10,4 +10,4 @@ ${inputFile:path=Chapters/DataMining/APriori.pillar}$
 
 ! Clustering
 %${inputFile:path=Chapters/Clustering/Clustering.pillar}$
-%${inputFile:path=Chapters/Clustering/HierarchicalClustering.pillar}$
+${inputFile:path=Chapters/Clustering/HierarchicalClustering.pillar}$
