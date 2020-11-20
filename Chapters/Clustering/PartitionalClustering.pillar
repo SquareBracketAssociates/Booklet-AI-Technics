@@ -12,7 +12,7 @@ In the next chapter you could read how to validate your own Machine Learning clu
 
 The following section will describe a few properties of the clustering algorithms. They are not mandatory to learn or use if the goal is to build a model to make predictions, but they are a good basis for understanding which clustering technique to use in case it is not self-evident for your problem at hand. Sometimes multiple techniques could be tried before reaching to a definitive conclusion. It is important to understand the process is highly-dependent of the context, and the properties of the dataset you want to cluster.
 
-!!!! Exclusiveness
+!!! Exclusiveness
 @sec:MLClustering-Exclusiveness
 
 A clustering algorithm could consider its observations to be:
@@ -49,14 +49,14 @@ It applies to observations which could be left without belonging to any cluster.
 - ""Complete"": All observations are assigned to a cluster. Answer ''<true>'' to #isComplete.
 - ""Partial"": There are observations which could have no cluster. Answer ''<true>'' to #isPartial.
 
-!!! k-means Clustering
+!! k-means Clustering
 @sec:MLClustering-KMeansIntroduction
 
 k-means is a clustering prediction method from an unlabeled dataset. It is very popular due to being fast, but as a drawback, it requires a number of clusters (k) to be specified beforehand. In this regard, an inappropriate choice for K may result in a poor clustering performance. 
 
 Another requirement of k-means is that variables to be analysed must be normalized (standardized). The procedure to ensure the variables are normalized is to scale them so the mean is zero and standard deviation (the sum of the covariance) is one. Such standardized real numbers are also known as z-scores. Normalization is a common step while doing exploratory analysis, as part of a data wrangling stage prior to applying any machine learning algorithm.
 
-!!!! Algorithm Description
+!!! Algorithm Description
 @sec:MLClustering-KMeansDescription
 
 The k-means formulation builds ""non-overlapping"" groups by randomly selecting K prototypes from the input observations. These prototypes are selected by the algorithm itself as centroids to represent each cluster. We will work with now with a simplification to visualize how the iteration proceeds:
@@ -101,6 +101,46 @@ The k-means formulation builds ""non-overlapping"" groups by randomly selecting 
 %\includegraphics[width=\textwidth]{Chapters/Clustering/figures/KMeans-Stage3}
 %\caption{k-means Stage 3}
 %\label{figKMeans3}
+%\end{figure}
+%}}}
+
+
+- The distance from all centroids to all data points is then calculated: Multiple distance algorithms are available, but it is common to use the Euclidean method. Others algorithms like the Manhattan distance can be used. The Euclidean distance is implemented in the method Point>>dist: in Pharo. Figure 4 shows that data points were assigned to its closest centroid.
+
++The key part of k-means algorithm is to "move" each centroid to the average location of its assigned observations. The move causes some of the initial assignments not to be closer to its centroid anymore, and then assignments should be updated.>file://figures/KMeans-Stage4.png|width=50|label=figKMeans4+
+
+%{{{
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=\textwidth]{Chapters/Clustering/figures/KMeans-Stage4}
+%\caption{k-means Stage 4}
+%\label{figKMeans4}
+%\end{figure}
+%}}}
+
+- Updating cluster centers and reassigning observations continues till the cluster centers stop changing.
+
++Recalculation of distance of data points>file://figures/KMeans-Stage5.png|width=50|label=figKMeans5+
+
+%{{{
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=\textwidth]{Chapters/Clustering/figures/KMeans-Stage5}
+%\caption{k-means Stage 5}
+%\label{figKMeans5}
+%\end{figure}
+%}}}
+
+- Iteration and refinement
+
++Iteration>file://figures/KMeans-Stage6.png|width=50|label=figKMeans6+
+
+%{{{
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=\textwidth]{Chapters/Clustering/figures/KMeans-Stage6}
+%\caption{k-means Stage 6}
+%\label{figKMeans6}
 %\end{figure}
 %}}}
 
@@ -322,7 +362,6 @@ We have seen what is known as the LLoyd's algorithm for k-means, published in 19
 - A recent algorithm (from Arthur and Vassilvitskii) called k-means++
 
 ''Work in progress''
-
 
 !!! Evaluating clustering performance
 
