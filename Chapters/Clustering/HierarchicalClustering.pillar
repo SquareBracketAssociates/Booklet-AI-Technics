@@ -1,0 +1,76 @@
+!! Hierarchical Clustering
+@sec:MLClustering-HierarchicalClusteringIntroduction
+
+In the previous chapter we have seen Partitional clustering methods, which generally require a user pre-defined parameter K to obtain a clustering solution. Hierachical clustering proposes a different type of approach: To build a hierarchy of clusters without the need to specify a K parameter. The main idea is that the built hierarchy can be cutted into N trees, using a dendrogram (visualization of binary tree), and thus obtaining the clusters. Where to cut is left to the 
+
+Agglomerative methods, one of the sub-types of Hierarchical clustering methods, start by taking each element as a cluster and merge two clusters at a time. So it builds a bottom-up hierarchy of the clusters. 
+
+Divisive methods, on the other hand, is the top-down counterpart: Start with one big cluster and split it recursively into two groups generating a top-down hierarchy of clusters. Each level in the hierarchy corresponds to some set of clusters. The leaves of the tree represents the singleton elements.
+
+In practice, the agglomerative type is the most used. We will describe here agglomerative clustering methods.
+
+!!! Ward Clustering
+@sec:MLClustering-WardClustering
+
+[[[
+| df ward |
+df := Datasets loadIris.
+ward := MLWardClustering new fit: df.
+]]]
+
+!!! Single Clustering
+@sec:MLClustering-SingleClustering
+
+Also called ""Nearest Neighbor"" or ""SLINK"", it is one of the oldest methods (approximately 1950). The method consists basically of two steps: 
+
+- Calculate the distances between the most similar members for each pair of clusters.
+- Merge the two clusters for which the distance between the most similar members is the smallest.
+
+[[[
+| df slink |
+df := Datasets loadIris.
+slink := MLSLinkClustering new fit: df.
+]]]
+
+!!! Complete Clustering
+@sec:MLClustering-CompleteClustering
+
+Also called ""Furthest Neighbor"" or ""CLINK"". The method consists basically of two steps: 
+
+- Calculate the distances between the most similar members for each pair of clusters 
+- Merge the two clusters for which the distance between the most dissimilar members is the smallest.
+
+[[[
+| df clink |
+df := Datasets loadIris.
+clink := MLCLinkClustering new fit: df.
+]]]
+
+!!! Average Clustering
+@sec:MLClustering-AverageClustering
+
+""UPGMA"" (Unweighted Pair Group Method with Arithmetic Mean)
+
+[[[
+| df upgma |
+df := Datasets loadIris.
+upgma := MLUPGMAClustering new fit: df.
+]]]
+
+!!! Median Clustering
+@sec:MLClustering-MedianClustering
+
+[[[
+| df median |
+df := Datasets loadIris.
+median := MLMedianClustering new fit: df.
+]]]
+
+!!! Centroid Clustering
+@sec:MLClustering-CentroidClustering
+
+[[[
+| df centroid |
+df := Datasets loadIris.
+centroid := MLCentroidClustering new fit: df.
+]]]
