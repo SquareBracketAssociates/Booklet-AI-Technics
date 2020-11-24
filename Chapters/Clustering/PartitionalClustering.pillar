@@ -762,6 +762,15 @@ If we interpret clusterA and clusterB as instance sets (flat collections), we ca
 
 As can be seen, both versions are equivalent and it is the interpretation of the input data what could change.
 
+
+!!!! Mirkin Index
+@sec:MLMetrics-Mirkin
+
+The Mirkin Index is an adjusted variation of the Rand Index, 
+
+
+
+
 !!!! Normalised Mutual Information (NMI)
 @sec:MLMetrics-NMI
 

@@ -1,13 +1,13 @@
 !! Hierarchical Clustering
 @sec:MLClustering-HierarchicalClusteringIntroduction
 
-In the previous chapter we have seen Partitional clustering methods, which generally require a user pre-defined parameter K to obtain a clustering solution. Hierachical clustering proposes a different type of approach: To build a hierarchy of clusters without the need to specify a K parameter. The main idea is that the built hierarchy can be cutted into N trees, using a dendrogram (visualization of binary tree), and thus obtaining the clusters. Where to cut is left to the 
+In the previous chapter we have seen Partitional clustering methods, which generally require a user pre-defined parameter K to obtain a clustering solution. Hierachical clustering proposes a different type of approach: To build a hierarchy of clusters without the need to specify a K parameter. The main idea is that the built hierarchy can be cutted into N trees, using a dendrogram (visualization of binary tree), and thus obtaining the clusters. Where to cut is left to the user of the method.
 
 Agglomerative methods, one of the sub-types of Hierarchical clustering methods, start by taking each element as a cluster and merge two clusters at a time. So it builds a bottom-up hierarchy of the clusters. 
 
 Divisive methods, on the other hand, is the top-down counterpart: Start with one big cluster and split it recursively into two groups generating a top-down hierarchy of clusters. Each level in the hierarchy corresponds to some set of clusters. The leaves of the tree represents the singleton elements.
 
-In practice, the agglomerative type is the most used. We will describe here agglomerative clustering methods.
+In practice, the agglomerative type is the most used. We will describe here agglomerative clustering methods, where each subclass of ==MLClustering== represents a different agglomeration method.
 
 !!! Ward Clustering
 @sec:MLClustering-WardClustering
