@@ -1,16 +1,16 @@
 !! Partitional Clustering
 @sec:MLClustering-Basics
 
-Real world data is mostly complex. To make sense of complex data requires approaches to shape it. While trying to make sense of it we can discover patterns to understand our data better. One of the well-known methods for such goal is clustering. A cluster is a set of objects that share similar features, while clustering is called the technique that divides the observations (called ''data points'' in the Machine Learning vocabulary) into groups to get an insight into this data in an ""unsupervised way"". Clustering is also viewed as automatic labeling a dataset, by discovering the groups in it. You can use clustering methods, for example, to identify communities in social networks, group music for different themes, perform customer segmentation, implement a recommendation system, among many other use cases.
+Real-world data is complex. To make sense of complex data requires approaches to shape it. While trying to make sense of it we can discover patterns to understand our data better. One of the well-known methods for such a goal is clustering. A cluster is a set of objects that share similar features, while clustering is called the technique that divides the observations (called ''data points'' in the Machine Learning vocabulary) into groups to get an insight into this data in an ""unsupervised way"". Clustering is also viewed as automatic labelling a dataset, by discovering the groups in it. You can use clustering methods, for example, to identify communities in social networks, group music for different themes, perform customer segmentation, implement a recommendation system, among many other use cases.
 
-In a more object-oriented sense, a clustering algorithm is an object which is able to group data points, and implements multiple features such as exclusiveness, nesting, completeness, and others such as metrics factors. We will discuss in the next sections its properties, although our main focus will be in how to apply clustering techniques in such way that you could translate it into your own experiments. We start by showing a high-level description of the API, and then move to experiment with a toy dataset so you can get an overview of some available methods to play with. 
+In a more object-oriented sense, a clustering algorithm is an object which can group data points and implements multiple features such as exclusiveness, nesting, completeness, and others such as metrics factors. We will discuss in the next sections its properties, although our main focus will be in how to apply clustering techniques in such a way that you could translate it into your experiments. We start by showing a high-level description of the API and then move to experiment with a toy dataset so you can get an overview of some available methods to play with. 
 
-In the next chapter you could read how to validate your own Machine Learning clusterings with the help of the MLMetrics package.
+In the next chapter, you could read how to validate your own Machine Learning clusterings with the help of the MLMetrics package.
 
 !!! API
 @sec:MLClustering-APIIntroduction
 
-The following section will describe a few properties of the clustering algorithms. They are not mandatory to learn or use if the goal is to build a model to make predictions, but they are a good basis for understanding which clustering technique to use in case it is not self-evident for your problem at hand. Sometimes multiple techniques could be tried before reaching to a definitive conclusion. It is important to understand the process is highly-dependent of the context, and the properties of the dataset you want to cluster.
+The following section will describe a few properties of the clustering algorithms. They are not mandatory to learn or use if the goal is to build a model to make predictions, but they are a good basis for understanding which clustering technique to use in case it is not self-evident for your problem at hand. Sometimes multiple techniques could be tried before reaching a definitive conclusion. It is important to understand the process is highly-dependent of the context, and the properties of the dataset you want to cluster.
 
 !!! Exclusiveness
 @sec:MLClustering-Exclusiveness
@@ -145,50 +145,10 @@ The k-means formulation builds ""non-overlapping"" groups by randomly selecting 
 %}}}
 
 
-- The distance from all centroids to all data points is then calculated: Multiple distance algorithms are available, but it is common to use the Euclidean method. Others algorithms like the Manhattan distance can be used. The Euclidean distance is implemented in the method Point>>dist: in Pharo. Figure 4 shows that data points were assigned to its closest centroid.
-
-+The key part of k-means algorithm is to "move" each centroid to the average location of its assigned observations. The move causes some of the initial assignments not to be closer to its centroid anymore, and then assignments should be updated.>file://figures/KMeans-Stage4.png|width=50|label=figKMeans4+
-
-%{{{
-%\begin{figure}[H]
-%\centering
-%\includegraphics[width=\textwidth]{Chapters/Clustering/figures/KMeans-Stage4}
-%\caption{k-means Stage 4}
-%\label{figKMeans4}
-%\end{figure}
-%}}}
-
-- Updating cluster centers and reassigning observations continues till the cluster centers stop changing.
-
-+Recalculation of distance of data points>file://figures/KMeans-Stage5.png|width=50|label=figKMeans5+
-
-%{{{
-%\begin{figure}[H]
-%\centering
-%\includegraphics[width=\textwidth]{Chapters/Clustering/figures/KMeans-Stage5}
-%\caption{k-means Stage 5}
-%\label{figKMeans5}
-%\end{figure}
-%}}}
-
-- Iteration and refinement
-
-+Iteration>file://figures/KMeans-Stage6.png|width=50|label=figKMeans6+
-
-%{{{
-%\begin{figure}[H]
-%\centering
-%\includegraphics[width=\textwidth]{Chapters/Clustering/figures/KMeans-Stage6}
-%\caption{k-means Stage 6}
-%\label{figKMeans6}
-%\end{figure}
-%}}}
-
-
 !!!! The Iris Dataset
 @sec:MLClustering-Iris
 
-Our final goal in this section is to build a ""clustering model"" to make predictions. We will work with the famous ""Iris-Flowers"" plants dataset, published by the statistician and biologist Ronald Fisher in 1936. You will see it named as the Edgar Anderson's Iris Flowers, because it was the botanic who collected the flowers. It consists of 150 flowers, carefully measured, and divided into 3 species groups of 50 flowers each. We advise to not underestimate the features of this dataset, as it is used as a toy data example as basis for understanding how clustering works. 
+Our final goal in this section is to build a ""clustering model"" to make predictions. We will work with the famous ""Iris-Flowers"" plants dataset, published by the statistician and biologist Ronald Fisher in 1936. You will see it named as the Edgar Anderson's Iris Flowers, because it was the botanic who collected the flowers. It consists of 150 flowers, carefully measured, and divided into 3 species groups of 50 flowers each. We advise to not underestimate the features of this dataset, as it is used as a toy data example as a basis for understanding how clustering works. 
 
 The Iris-Flowers dataset is available in the Datasets package which can be loaded with the expression:
 
@@ -239,16 +199,24 @@ Datasets loadIris head.
 %\end{figure}
 %}}}
 
-By quickly checking the data, we can see we are conceeding multiple assumptions here: The whole dataset comes from a single experiment under almost perfect laboratory conditions, where variables are in the same measure (in this case centimeters), hence comparable, and even published in a peer-reviewed scientific journal! Real scenarios are not so kind. Variables could have different types and importance, it could contains missing values everywhere, have an undefined or unparseable format, probably should be combined, scaled and scored, just to name a few data preprocessing steps.
+By quickly checking the data, we can see we are conceding multiple assumptions here: The whole dataset comes from a single experiment under almost perfect laboratory conditions, where variables are in the same measure (in this case centimetres), hence comparable, and even published in a peer-reviewed scientific journal! Real scenarios are not so kind. Variables could have different types and importance, it could contain missing values everywhere, have an undefined or unparseable format, probably should be combined, scaled and scored, just to name a few data preprocessing steps.
 
-For now we can get a first challenge here, namely interpretation. Which variables are the important ones in this dataset to get a predictive model? All of them? It would be nice to plot these observations with the Roassal visualization engine, but we have four real-value variables and just only 2 or 3 dimensions we can "easily" plot. We will see two dimensions in the next example. In this case a good idea is to drop the labels column, and set all data points with the same color, so we can get a feel of a real-life dataset. Let's take the y dimension to be the "SepalLength" and the x dimension to be "SepalWidth":
+For now, we can get the first challenge here, namely interpretation. Which variables are the important ones in this dataset to get a predictive model? All of them? It would be nice to plot these observations with the Roassal visualization engine, but we have four real-valued variables and just only 2 or 3 dimensions we can "easily" plot. We will see two dimensions in the next example. In this case, a good idea is to drop the labels column and set all data points with the same colour, so we can get a feel of a real-life dataset. Let's take the y dimension to be the "SepalLength" and the x dimension to be "SepalWidth":
 
 [[[
-MLR2ScatterPlotViz 
-	plot: Datasets loadIris 
-	k: 1.
+MLR2ScatterPlotViz plot: Datasets loadIris.
 ]]]
 
++Initial visualization of two Iris Dataset features (without cluster predictions)>file://figures/MLScatterPlotViz_1.png|width=100|label=figMLIrisViz1+
+
+%{{{
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=\textwidth]{Chapters/Clustering/figures/MLScatterPlotViz_1}
+%\caption{Inspector of the first flowers in the Iris Dataset}
+%\label{figMLIrisViz1}
+%\end{figure}
+%}}}
 
 !!!! Simple Example
 @sec:MLClustering-KMeansSimpleExample
@@ -261,9 +229,9 @@ df := Datasets loadIris.
 kmeans := KMeans numberOfClusters: 3.
 ]]]
 
-The selection of a "good value" of K usually requires a good understanding of the domain model, for example one may choose K = 3 under the knowledge of the domain model has three kinds of diagnostics (whatever they are), or K = 2 when there are two types of insurances, players, or any other object. You can easily run KMeans with several values of K, but at some point the refinement makes no difference to the final predictions and comparing results between different values of K is time-consuming.
+The selection of a "good value" of K usually requires a good understanding of the domain model, for example, one may choose K = 3 under the knowledge of the domain model has three kinds of diagnostics (whatever they are), or K = 2 when there are two types of insurances, players, or any other object. You can easily run KMeans with several values of K, but at some point, the refinement makes no difference to the final predictions and comparing results between different values of K is time-consuming.
 
-Of course we already know there are three real clusters in the Iris-Flowers dataset but let us pretend, for the sake of learning k-means, to ignore the "species" column which contains the three clusters. We will see later there are methods to guess a good number of clusters, for example the "elbow method".
+Of course, we already know there are three real clusters in the Iris-Flowers dataset but let us pretend, for the sake of learning k-means, to ignore the "species" column which contains the three clusters. We will see later there are methods to guess a good number of clusters, for example, the "elbow method".
 
 So far we have a k-means object, which does nothing but gets instantiated. To start building the k-means cluster model, it should be "fitted" or " trained". To build the model, we select the features we would like to use to predict our target variable.
 
@@ -279,43 +247,10 @@ kmeans maxIterations: 20.
 ]]]
 
 
-Now that we predicted a value for K, let's get back to the Roassal visualization:
+Now that we predicted a value for K, let's get back to the Roassal visualization, this time we configure a value of K:
 
-''Work in progress: Adapt the following script to use MLViz''
 [[[
-|  g d df lb featureASelector featureBSelector |
-
-df := Datasets loadIris.
-" The first column is the Sepal Length feature "
-featureASelector := #first.
-" The second column is the Sepal Width feature "
-featureBSelector := #second.
-g := RTGrapher new.
-d := RTData new.
-" Create a small description of colors represented "
-lb := RTLegendBuilder new.
-lb view: g view; right.
-lb addText: 'Iris Dataset'.
-" Configure the colors of the data points "
-{ 'virginica' -> Color blue .
-  'versicolor' ->  Color green .
-  'setosa' -> Color red } associationsDo: [ : assoc | 
-	d dotShape if: [ :row | row last = assoc key ] fillColor: assoc value.
-	lb addColor: assoc value text: assoc key ].
-
-d points: (df asArrayOfRows collect: #asArray).
-d x: featureASelector.
-d y: featureBSelector.
-g add: d.
-" Setup the axis labels and color "
-g axisY
-  title: (df columnNames perform: featureASelector);
-  color: Color black.
-g axisX
-  title: (df columnNames perform: featureBSelector);
-  color: Color black.
-lb build.
-g open
+MLR2ScatterPlotViz plot: Datasets loadIris.
 ]]]
 
 
@@ -333,10 +268,10 @@ g open
 We can see that the first two features, "Sepal Length" versus "Sepal Width", does not seem to be good predictors for cluster recognition. We could try combinations of different features by changing ''featureASelector'' and ''featureBSelector'' to select other features (#second versus #third, #third versys #fourth, etc.) however there is a useful plot for these cases, the scatter plot matrix:
 
 [[[
-MLR2ScatterPlotViz plot: Datasets loadIris.
+MLR2ScatterMatrixViz plot: Datasets loadIris.
 ]]]
 
-+Scatterplot of Iris features>file://figures/scatterplot-iris.png|width=90|label=figScatterIris+
++Scatter matrix of Iris features>file://figures/scatterplot-iris.png|width=90|label=figScatterIris+
 
 %{{{
 %\begin{figure}[H]
@@ -346,6 +281,22 @@ MLR2ScatterPlotViz plot: Datasets loadIris.
 %\label{figScatterIris}
 %\end{figure}
 %}}}
+
+
+If we want to get a scatter plot of two features for some K, and setting colors of the data points, we could do it this way:
+
+[[[
+MLR2ScatterPlotViz new
+	k: 3;	
+	featureASelector: #second;
+	featureBSelector: #third;
+	colors: { 
+		'virginica' 	-> Color blue .
+		'versicolor'	-> Color green .
+		'setosa' 		-> Color red } asDictionary;
+	initializeWithDataFrame: Datasets loadIris;
+	plot.
+]]]
 
 
 How to use the prediction model?
@@ -369,9 +320,9 @@ Every clustering algorithm has its own advantages and drawbacks. Validation of c
 
 Roughly, there are two major strategies to assess clustering quality:
 
-""External cluster evaluation"": Which involves comparing results of a cluster method with already known labels of another reference cluster. This type of assessment is similar to supervised learning, in the sense that at least one of the clustering results is considered to have the ground truth clusters or represents the optimal solution. Examples of this type of metric are the ''Rand Index'' (Rand, 1971), the ''Adjusted Rand Index'' or ''ARI'' (Hubert and Arabie, 1985), the ''F-measure'', the ''Jaccard Index'' (Anderberg, 1973), the ''Dice Index'' (Dice, 1945; Sørensen, 1948) and the ''Normalised Mutual Information'' or ''NMI''.
+""External cluster evaluation"": Which involves comparing results of a clustering method with already known labels of another reference cluster. This type of assessment is similar to supervised learning, in the sense that at least one of the clustering results is considered to have the ground truth clusters or represents the optimal solution. Examples of this type of metric are the ''Rand Index'' (Rand, 1971), the ''Adjusted Rand Index'' or ''ARI'' (Hubert and Arabie, 1985), the ''F-measure'', the ''Jaccard Index'' (Anderberg, 1973), the ''Dice Index'' (Dice, 1945; Sørensen, 1948) and the ''Normalised Mutual Information'' or ''NMI''.
 
-""Internal cluster evaluation"": Which does not use information outside the dataset, like human annotations, and involves summarization into a single quality score. In many applications ground truth labels are not available (consider for example streaming applications). Examples of this type of metric are the ''Root-mean-square standard deviation'' or ''RMSSTD/RMSD/RMSE'' and the ''R-squared'' or ''RS'' (Sharma, 1996), the ''Silhouette Coeffecient'' (Rousseeuw, 1987), the ''Davies-Bouldin Index'' or ''DB'' (Theodoridis and Koutroubas, 1999).
+""Internal cluster evaluation"": Which does not use information outside the dataset, like human annotations, and involves summarization into a single quality score. In many applications ground truth labels are not available (consider for example streaming applications). Examples of this type of metric are the ''Root-mean-square standard deviation'' or ''RMSSTD/RMSD/RMSE'' and the ''R-squared'' or ''RS'' (Sharma, 1996), the ''Silhouette Coefficient'' (Rousseeuw, 1987), the ''Davies-Bouldin Index'' or ''DB'' (Theodoridis and Koutroubas, 1999).
 
 !!!! Installation
 @chap:MLMetrics-Installation
