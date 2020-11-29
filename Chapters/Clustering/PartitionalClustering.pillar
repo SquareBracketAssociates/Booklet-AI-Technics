@@ -207,7 +207,7 @@ For now, we can get the first challenge here, namely interpretation. Which varia
 MLR2ScatterPlotViz plot: Datasets loadIris.
 ]]]
 
-+Initial visualization of two Iris Dataset features (without cluster predictions)>file://figures/MLScatterPlotViz_1.png|width=100|label=figMLIrisViz1+
++Initial visualization of two Iris Dataset features (without cluster predictions)>file://figures/MLScatterPlotViz_1.png|width=80|label=figMLIrisViz1+
 
 %{{{
 %\begin{figure}[H]
@@ -470,28 +470,31 @@ clusterResult2 := {
 Our collection has 5 elements, which results in 10 possible pairs of points for each clustering: 
 
 {{{ \[ pairsClusterResult1 \Rightarrow \{ 
-\[ \{ Pair \{1, 2\} = (Spinoza, Bentham) = (Cluster 1, Cluster 1) \} \]
-\[ \{ Pair \{1, 3\} = (Spinoza, Kant) = (Cluster 1, Cluster 2)  \} \]
-\[ \{ Pair \{1, 4\} = (Spinoza, Foucault) = (Cluster 1, Cluster 3)  \} \]
-\[ \{ Pair \{1, 5\} = {Spinoza, Plato) = (Cluster 1, Cluster 3) \} \]
-\[ \{ Pair \{2, 3\} = (Bentham, Kant) = (Cluster 1, Cluster 2) \} \]
-\[ \{ Pair \{2, 4\} = (Bentham, Foucault) = (Cluster 1, Cluster 3) \} \]
-\[ \{ Pair \{2, 5\} = (Bentham, Plato) = (Cluster 1, Cluster 3) \} \]
-\[ \{ Pair \{3, 4\} = (Kant, Foucault) = (Cluster 2, Cluster 3) \} \]
-\[ \{ Pair \{3, 5\} = (Kant, Plato) = (Cluster 2, Cluster 3) \} \]
-\[ \{ Pair \{4, 5\} = (Foucault, Plato) = (Cluster 3, Cluster 3) \} \]
+\{ Pair \{1, 2\} = (Spinoza, Bentham) = (Cluster 1, Cluster 1) \}
+\{ Pair \{1, 3\} = (Spinoza, Kant) = (Cluster 1, Cluster 2)  \}
+\{ Pair \{1, 4\} = (Spinoza, Foucault) = (Cluster 1, Cluster 3) \}
+\{ Pair \{1, 5\} = {Spinoza, Plato) = (Cluster 1, Cluster 3) \}
+\{ Pair \{2, 3\} = (Bentham, Kant) = (Cluster 1, Cluster 2) \} 
+\{ Pair \{2, 4\} = (Bentham, Foucault) = (Cluster 1, Cluster 3) \}
+\{ Pair \{2, 5\} = (Bentham, Plato) = (Cluster 1, Cluster 3) \}
+\{ Pair \{3, 4\} = (Kant, Foucault) = (Cluster 2, Cluster 3) \}
+\{ Pair \{3, 5\} = (Kant, Plato) = (Cluster 2, Cluster 3) \}
+\{ Pair \{4, 5\} = (Foucault, Plato) = (Cluster 3, Cluster 3) \} \]
+}}}
 
-\[ \{ pairsClusterResult2 \Rightarrow \{ \]
-\[ \{ Pair \{1, 2\} = (Spinoza, Bentham) = (Cluster 1, Cluster 1) \} \]
-\[ \{ Pair \{1, 3\} = (Spinoza, Kant) = (Cluster 1, Cluster 2) \} \]
-\[ \{ Pair \{1, 4\} = (Spinoza, Foucault) = (Cluster 1, Cluster 2) \} \]
-\[ \{ Pair \{1, 5\} = (Spinoza, Plato) = {Cluster 1, Cluster 3) \} \]
-\[ \{ Pair \{2, 3\} = (Bentham, Kant) = (Cluster 1, Cluster 2) \} \]
-\[ \{ Pair \{2, 4\} = (Bentham, Foucault) = (Cluster 1, Cluster 2) \} \]
-\[ \{ Pair \{2, 5\} = (Bentham, Plato) = (Cluster 1, Cluster 3) \} \]
-\[ \{ Pair \{3, 4\} = (Kant, Foucault) = (Cluster 2, Cluster 2  \} \]
-\[ \{ Pair \{3, 5\} = (Kant, Plato) = (Cluster 2, Cluster 3) \} \]
-\[ \{ Pair \{4, 5\} = (Foucault, Plato) = (Cluster 2, Cluster 3) \} \]
+And now we define the pairs for the second clustering results:
+
+{{{ \[ \{ pairsClusterResult2 \Rightarrow \{
+\{ Pair \{1, 2\} = (Spinoza, Bentham) = (Cluster 1, Cluster 1) \} 
+\{ Pair \{1, 3\} = (Spinoza, Kant) = (Cluster 1, Cluster 2) \} 
+\{ Pair \{1, 4\} = (Spinoza, Foucault) = (Cluster 1, Cluster 2) \} 
+\{ Pair \{1, 5\} = (Spinoza, Plato) = {Cluster 1, Cluster 3) \} 
+\{ Pair \{2, 3\} = (Bentham, Kant) = (Cluster 1, Cluster 2) \} 
+\{ Pair \{2, 4\} = (Bentham, Foucault) = (Cluster 1, Cluster 2) \}
+\{ Pair \{2, 5\} = (Bentham, Plato) = (Cluster 1, Cluster 3) \}
+\{ Pair \{3, 4\} = (Kant, Foucault) = (Cluster 2, Cluster 2  \} 
+\{ Pair \{3, 5\} = (Kant, Plato) = (Cluster 2, Cluster 3) \}
+\{ Pair \{4, 5\} = (Foucault, Plato) = (Cluster 2, Cluster 3) \} \]
 }}}
 
 Now let's proceed to count pairs of indices, suming up 1 as each case appears according to the four cases in the Rand Index formula. Our initial state for the four cases is a = 0, b = 0, c = 0 and d = 0. To follow the next iterations, recall the formula we previously defined in the Formal Definition section:
