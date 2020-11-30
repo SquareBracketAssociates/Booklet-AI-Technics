@@ -9,6 +9,7 @@ xargs tlmgr install <<DEPS
     environ
     filehook
     fira
+	fontaxes
     fontspec
     footmisc
     gentium-tug
@@ -35,4 +36,5 @@ xargs tlmgr install <<DEPS
     varwidth
     xcolor
     xtab
+	zref
 DEPS
