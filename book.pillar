@@ -13,3 +13,6 @@ ${inputFile:path=Chapters/Clustering/PartitionalClustering.pillar}$
 
 %! Hierarchical Clustering
 ${inputFile:path=Chapters/Clustering/HierarchicalClustering.pillar}$
+
+%! Clustering Evaluation
+${inputFile:path=Chapters/Clustering/ClusteringEvaluation.pillar}$
