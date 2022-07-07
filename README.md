@@ -1,8 +1,5 @@
 # A booklet on the Basic AI Technics
 
-[![Build status][badge]][travis]
+[![Build status](https://github.com/SquareBracketAssociates/Booklet-AI-Technics/workflows/CI/badge.svg)](https://github.com/SquareBracketAssociates/Booklet-AI-Technics/actions/workflows/main.yml)
 
-[travis]: https://travis-ci.com/SquareBracketAssociates/Booklet-AI-Technics
-[badge]: https://travis-ci.com/SquareBracketAssociates/Booklet-AI-Technics.svg?branch=master
-
-The result from the latest successful Travis build can be found the 'releases' pane of this page.
+[The latest PDF](https://github.com/SquareBracketAssociates/Booklet-AI-Technics/releases/download/latest/Booklet-AI-Technics.pdf)
