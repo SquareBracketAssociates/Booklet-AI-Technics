@@ -1,5 +1,4 @@
 ## Hierarchical Clustering
-
 @sec:AIClustering-HierarchicalClusteringIntroduction
 
 In the previous chapter we have seen Partitional clustering methods, which generally require a user pre-defined parameter _k_ to obtain a clustering solution. Hierachical clustering proposes a different type of approach: To build a hierarchy of clusters, **based on the similarity of elements and clusters**, without the need to specify the number of clusters to be generated \(the _k_ parameter\). Such built hierarchy is a binary tree. The leaves are the user elements \(so-called _data points_\) and the nodes are the merges of two clusters. 
